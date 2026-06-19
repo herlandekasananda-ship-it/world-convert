@@ -1,13 +1,13 @@
 // app/[locale]/page.tsx
+// ✅ REDESIGNED: Premium Mobile-First SaaS Layout — Clean design system for mobile users
 import { getDatabase, KontenData } from '@/lib/db';
 import Image from 'next/image';
-import { Link } from '@/i18n/routing'; 
+import { Link } from '@/i18n/routing';
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
-// 🚀 TAMBAHKAN FUNGSI INI: Memberitahu Next.js rute bahasa apa saja yang sah saat Build Time
 export async function generateStaticParams() {
   return [
     { locale: 'id' },
@@ -21,19 +21,18 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const db = await getDatabase();
 
-  // 1. Ambil konten dari Lowdb berdasarkan locale yang aktif
   const dataHalaman = db.data.konten.find(
     (item: KontenData) => item.page === 'home' && item.locale === locale
   );
 
-  // 2. Sistem Kamus Label Statis 4 Bahasa (ID, EN, ES, TL)
-  const getLabel = (key: string) => {
+  // ── i18n dictionary (Fully Retained) ──────────────────────────────────────
+  const getLabel = (key: string): string => {
     const dictionary: Record<string, Record<string, string>> = {
       badge: {
-        id: "⚡ Terpercaya & Tercepat Global",
-        en: "⚡ Trusted & Fastest Globally",
-        es: "⚡ Confiable y Más Rápido Global",
-        tl: "⚡ Maaasahan at Pinakamabilis Global"
+        id: "Terpercaya & Tercepat Global",
+        en: "Trusted & Fastest Globally",
+        es: "Confiable y Más Rápido Global",
+        tl: "Maaasahan at Pinakamabilis Global"
       },
       btnCair: {
         id: "Cairkan Sekarang",
@@ -54,40 +53,39 @@ export default async function HomePage({ params }: Props) {
       flagSub: {
         id: "Kami melayani penukaran dan pencairan mata uang lokal di berbagai belahan negara resmi Orb.",
         en: "We serve exchanges and local currency withdrawals across various official Orb countries.",
-        es: "Atendemos intercambios y retiros en moneda local en varios países oficiales di Orb.",
+        es: "Atendemos intercambios y retiros en moneda local en varios países oficiales de Orb.",
         tl: "Nagsisilbi kami ng mga palitan at pag-withdraw ng lokal na pera sa iba't ibang opisyal na bansa ng Orb."
       },
       commentTitle: { id: "Apa Kata Mereka?", en: "What They Say", es: "¿Qué Dicen Ellos?", tl: "Ano ang Sinasabi Nila" },
       commentSub: {
         id: "Ulasan jujur dari pelanggan global yang telah berhasil mencairkan koin mereka.",
         en: "Honest reviews from global customers who have successfully withdrawn their coins.",
-        es: "Reseñas honestas de clientes globales que han retirado sus monedas con éxito.",
+        es: "Reseñas honestas di clientes globales que han retirado sus monedas con éxito.",
         tl: "Mga tapat na pagsusuri mula sa mga global na customer na matagumpay na nag-withdraw."
       }
     };
-
-    return dictionary[key]?.[locale] || dictionary[key]?.[ 'en'];
+    return dictionary[key]?.[locale] || dictionary[key]?.['en'] || '';
   };
 
-  // 3. Testimoni Dinamis Berbasis Bahasa
+  // ── Dummy Data ────────────────────────────────────────────────────────────
   const dummyComments = [
-    { 
-      id: 1, 
-      name: "Alejandro M.", 
-      role: "Verified Orb User", 
-      country: "ES", 
-      rating: "⭐⭐⭐⭐⭐",
+    {
+      id: 1,
+      name: "Alejandro M.",
+      role: "Verified Orb User",
+      country: "ES",
+      rating: 5,
       text: locale === 'id' ? "Prosesnya sangat cepat! Hanya butuh 3 menit sampai saldo masuk." :
             locale === 'es' ? "¡El proceso es extremadamente rápido! Solo tomó 3 minutos." :
             locale === 'tl' ? "Napakabilis ng proseso! Tumagal lamang ng 3 minuto." :
             "The process is extremely fast! It only took 3 minutes for the balance to hit."
     },
-    { 
-      id: 2, 
-      name: "Sarah K.", 
-      role: "Trader", 
-      country: "US", 
-      rating: "⭐⭐⭐⭐⭐",
+    {
+      id: 2,
+      name: "Sarah K.",
+      role: "Trader",
+      country: "US",
+      rating: 5,
       text: locale === 'id' ? "Rate-nya sangat kompetitif dan transparan." :
             locale === 'es' ? "La tarifa resultó ser muy competitiva y transparente." :
             locale === 'tl' ? "Ang rate ay napakahusay at transparent." :
@@ -97,7 +95,7 @@ export default async function HomePage({ params }: Props) {
 
   const globalFlags = [
     { code: "id", name: "Indonesia" },
-    { code: "es", name: locale === 'es' ? "España" : "Spain/Spanyol" },
+    { code: "es", name: locale === 'es' ? "España" : "Spain" },
     { code: "ph", name: locale === 'tl' ? "Pilipinas" : "Philippines" },
     { code: "us", name: "United States" },
     { code: "ar", name: "Argentina" },
@@ -105,128 +103,609 @@ export default async function HomePage({ params }: Props) {
   ];
 
   return (
-    <div style={{ padding: '2rem 1rem', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto', color: '#1e293b' }}>
-      
-      {/* 1. HERO SECTION */}
-      <section style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4rem', padding: '1rem' }}>
-        <div style={{ flex: '1 1 450px' }}>
-          <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 600 }}>
-            {getLabel('badge')}
-          </span>
-          <h1 style={{ color: '#2563eb', fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1.25rem', marginTop: '1rem', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
-            {dataHalaman?.title || 'Worldcoin Cash Out'}
-          </h1>
-          <p style={{ color: '#475569', fontSize: '1.125rem', lineHeight: '1.75', whiteSpace: 'pre-line', marginBottom: '2rem' }}>
-            {dataHalaman?.content || 'Content Not Found'}
-          </p>
+    <>
+      {/* ── DESIGN SYSTEM + MOBILE INDEPENDENT OPTIMIZATIONS ───────────────── */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --clr-bg:          #F8FAFC;
+          --clr-surface:     #FFFFFF;
+          --clr-surface-2:   #F1F5F9;
+          --clr-border:      #E2E8F0;
+          --clr-border-soft: rgba(226, 232, 240, 0.6);
+          --clr-primary:     #2563EB;
+          --clr-primary-dark:#1D4ED8;
+          --clr-primary-glow:rgba(37, 99, 235, 0.15);
+          --clr-primary-tint:#EFF6FF;
+          --clr-accent:      #0EA5E9;
+          --clr-success:     #10B981;
+          --clr-text-1:      #0F172A;
+          --clr-text-2:      #334155;
+          --clr-text-3:      #64748B;
+          --clr-text-inv:    #FFFFFF;
+
+          --shadow-xs:  0 1px 2px rgba(15,23,42,0.06);
+          --shadow-sm:  0 2px 8px rgba(15,23,42,0.08);
+          --shadow-md:  0 4px 16px rgba(15,23,42,0.10);
+          --shadow-lg:  0 8px 32px rgba(15,23,42,0.12);
+          --shadow-primary: 0 4px 16px rgba(37,99,235,0.2);
+
+          --radius-md:  12px;
+          --radius-lg:  20px;
+          --radius-xl:  24px;
+          --radius-full: 9999px;
+
+          --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <Link 
-              href="/tarik-worldcoin-ke-cash"
-              style={{ 
-                backgroundColor: '#2563eb', 
-                color: '#ffffff', 
-                padding: '0.75rem 1.5rem', 
-                borderRadius: '8px', 
-                fontWeight: 'bold', 
-                fontSize: '1rem', 
-                cursor: 'pointer', 
-                textDecoration: 'none',
-                display: 'inline-block',
-                boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)' 
-              }}
-            >
-              {getLabel('btnCair')}
-            </Link>
-            <button style={{ backgroundColor: '#ffffff', color: '#475569', padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>
-              {getLabel('btnRate')}
-            </button>
-          </div>
-        </div>
+          --space-2: 0.5rem;
+          --space-3: 0.75rem;
+          --space-4: 1rem;
+          --space-5: 1.25rem;
+          --space-6: 1.5rem;
+          --space-8: 2rem;
+          --space-10: 2.5rem;
+          --space-12: 3rem;
+        }
 
-        <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '450px', height: '300px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <Image 
-              src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=600&auto=format&fit=crop" 
-              alt="Crypto Dashboard" 
-              fill
-              style={{ objectFit: 'cover' }}
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-      {/* 2. TRUST METRICS */}
-      <section style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '2rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'space-around', textAlign: 'center', marginBottom: '4rem' }}>
-        <div>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2563eb' }}>$2.5M+</div>
-          <div style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.25rem' }}>{getLabel('metric1')}</div>
-        </div>
-        <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '2rem' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2563eb' }}>&lt; 5 Min</div>
-          <div style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.25rem' }}>{getLabel('metric2')}</div>
-        </div>
-        <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '2rem' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2563eb' }}>15,000+</div>
-          <div style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.25rem' }}>{getLabel('metric3')}</div>
-        </div>
-      </section>
+        .hp-root {
+          font-family: var(--font-body);
+          background: var(--clr-bg);
+          color: var(--clr-text-1);
+          min-height: 100vh;
+          -webkit-font-smoothing: antialiased;
+        }
 
-      {/* 3. SECTION BENDERA */}
-      <section style={{ marginBottom: '4rem', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.5rem' }}>{getLabel('flagTitle')}</h2>
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>{getLabel('flagSub')}</p>
+        .hp-container {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 0 var(--space-5);
+        }
+
+        /* ── HERO OPTIMIZED FOR MOBILE FIRST ───────────────────────────────── */
+        .hp-hero-wrap {
+          position: relative;
+          background: var(--clr-surface);
+          border-bottom: 1px solid var(--clr-border);
+          overflow: hidden;
+          padding: var(--space-10) 0 var(--space-8);
+        }
+
+        .hp-hero-wrap::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+          background-size: 24px 24px;
+          opacity: 0.35;
+          pointer-events: none;
+        }
+
+        .hp-hero-inner {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column-reverse; /* Coin stays on top or middle naturally in flow */
+          gap: var(--space-8);
+          align-items: center;
+          text-align: center;
+        }
+
+        .hp-hero-left {
+          width: 100%;
+        }
+
+        .hp-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-2);
+          background: var(--clr-primary-tint);
+          color: var(--clr-primary);
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 0.35rem var(--space-3);
+          border-radius: var(--radius-full);
+          border: 1px solid rgba(37, 99, 235, 0.15);
+          margin-bottom: var(--space-4);
+        }
+
+        .hp-badge-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--clr-success);
+          box-shadow: 0 0 0 2px rgba(16,185,129,0.2);
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+          0%, 100% { box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+          50%       { box-shadow: 0 0 0 5px rgba(16,185,129,0.05); }
+        }
+
+        .hp-headline {
+          font-size: clamp(1.85rem, 6vw, 2.75rem);
+          font-weight: 800;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+          color: var(--clr-text-1);
+          margin: 0 0 var(--space-3);
+        }
+
+        .hp-headline-accent {
+          background: linear-gradient(135deg, var(--clr-primary) 0%, var(--clr-accent) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .hp-body {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--clr-text-2);
+          margin: 0 0 var(--space-6);
+        }
+
+        /* Full Width Action Buttons on Small Mobile Screen */
+        .hp-cta-row {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-3);
+          width: 100%;
+        }
+
+        .hp-btn-primary, .hp-btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-2);
+          font-size: 0.95rem;
+          font-weight: 600;
+          padding: 0.8rem var(--space-6);
+          border-radius: var(--radius-md);
+          text-decoration: none;
+          width: 100%;
+          box-sizing: border-box;
+          transition: all 0.15s ease;
+        }
+
+        .hp-btn-primary {
+          background: var(--clr-primary);
+          color: var(--clr-text-inv);
+          box-shadow: var(--shadow-primary);
+          border: none;
+        }
+
+        .hp-btn-secondary {
+          background: var(--clr-surface);
+          color: var(--clr-text-2);
+          border: 1px solid var(--clr-border);
+        }
+
+        /* ── HERO COIN FLUID MOBILE SIZE ──────────────────────────────────── */
+        .hp-hero-right {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          min-height: 160px;
+          margin-bottom: var(--space-2);
+        }
+
+        .hp-coin-glow {
+          position: absolute;
+          width: 180px;
+          height: 180px;
+          background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .hp-coin-shadow {
+          position: absolute;
+          bottom: 0px;
+          width: 90px;
+          height: 8px;
+          background: rgba(15,23,42,0.08);
+          border-radius: 50%;
+          filter: blur(5px);
+          animation: shadow-float 4s ease-in-out infinite;
+        }
+
+        @keyframes shadow-float {
+          0%, 100% { transform: scaleX(1); opacity: 0.6; }
+          50%       { transform: scaleX(0.85); opacity: 0.35; }
+        }
+
+        .hp-coin-container {
+          perspective: 1000px;
+          width: 130px;
+          height: 130px;
+          animation: float-coin 4s ease-in-out infinite;
+        }
+
+        @keyframes float-coin {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-12px); }
+        }
+
+        .hp-coin {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          transform-style: preserve-3d;
+          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hp-coin-container:hover .hp-coin {
+          transform: rotateY(360deg);
+        }
+
+        .hp-coin-face {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          backface-visibility: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: radial-gradient(circle at 35% 35%, #1e2533 0%, #0c0f18 100%);
+          border: 4px solid #111827;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 1px 4px rgba(255,255,255,0.1);
+        }
+
+        .hp-coin-back {
+          transform: rotateY(180deg);
+        }
+
+        /* ── METRICS VERTICAL ON MOBILE ────────────────────────────────────── */
+        .hp-metrics-wrap {
+          padding: var(--space-6) 0;
+        }
+
+        .hp-metrics-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: var(--space-3);
+        }
+
+        .hp-metric-card {
+          background: var(--clr-surface);
+          border: 1px solid var(--clr-border);
+          border-radius: var(--radius-md);
+          padding: var(--space-4);
+          text-align: center;
+          box-shadow: var(--shadow-xs);
+        }
+
+        .hp-metric-value {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--clr-primary);
+          margin-bottom: 2px;
+        }
+
+        .hp-metric-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--clr-text-3);
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+
+        /* ── SECTION HEADERS FOR MOBILE ────────────────────────────────────── */
+        .hp-flags-wrap, .hp-comments-wrap {
+          padding: var(--space-10) 0;
+          border-top: 1px solid var(--clr-border);
+        }
+
+        .hp-flags-wrap { background: var(--clr-surface); }
+
+        .hp-section-eyebrow {
+          text-align: center;
+          margin-bottom: var(--space-6);
+        }
+
+        .hp-section-label {
+          display: inline-block;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--clr-primary);
+          margin-bottom: var(--space-2);
+        }
+
+        .hp-section-title {
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: var(--clr-text-1);
+          margin: 0 0 var(--space-2);
+        }
+
+        .hp-section-sub {
+          font-size: 0.875rem;
+          color: var(--clr-text-3);
+          line-height: 1.5;
+        }
+
+        /* ── CHIPS & CARDS ─────────────────────────────────────────────────── */
+        .hp-flags-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--space-2);
+          justify-content: center;
+        }
+
+        .hp-flag-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-2);
+          background: var(--clr-bg);
+          border: 1px solid var(--clr-border);
+          border-radius: var(--radius-md);
+          padding: 0.5rem var(--space-4);
+        }
+
+        .hp-flag-img-wrap {
+          width: 20px;
+          height: 15px;
+          position: relative;
+          border-radius: 2px;
+          overflow: hidden;
+        }
+
+        .hp-flag-name {
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: var(--clr-text-2);
+        }
+
+        .hp-comments-grid {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-4);
+        }
+
+        .hp-comment-card {
+          background: var(--clr-surface);
+          border: 1px solid var(--clr-border);
+          border-radius: var(--radius-lg);
+          padding: var(--space-5);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .hp-comment-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: var(--space-3);
+        }
+
+        .hp-comment-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 0.8rem;
+          font-weight: 700;
+          margin-right: var(--space-3);
+        }
+
+        .hp-comment-info { flex: 1; }
+        .hp-comment-name { font-size: 0.9rem; font-weight: 700; color: var(--clr-text-1); }
+        .hp-comment-role { font-size: 0.7rem; color: var(--clr-text-3); }
         
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-          {globalFlags.map((flag) => (
-            <div key={flag.code} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#ffffff', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div style={{ width: '24px', height: '18px', position: 'relative', overflow: 'hidden', borderRadius: '2px' }}>
-                <Image 
-                  src={`https://flagcdn.com/w40/${flag.code}.png`} 
-                  alt={`Flag`}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                />
-              </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#334155' }}>{flag.name}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+        .hp-comment-flag-wrap {
+          width: 20px;
+          height: 14px;
+          position: relative;
+        }
 
-      {/* 4. COMMENTS */}
-      <section style={{ marginBottom: '2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.5rem' }}>{getLabel('commentTitle')}</h2>
-          <p style={{ color: '#64748b' }}>{getLabel('commentSub')}</p>
-        </div>
+        .hp-stars { display: flex; gap: 2px; margin-bottom: var(--space-2); }
+        .hp-star { color: #F59E0B; font-size: 0.8rem; }
+        .hp-comment-text { font-size: 0.875rem; line-height: 1.5; color: var(--clr-text-2); margin: 0; font-style: italic; }
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center' }}>
-          {dummyComments.map((comment) => (
-            <div key={comment.id} style={{ flex: '1 1 300px', maxWidth: '360px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1rem', color: '#0f172a' }}>{comment.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{comment.role}</div>
+        /* ── TABLET & DESKTOP RESPONSIVE ENHANCEMENTS ─────────────────────── */
+        @media (min-width: 640px) {
+          .hp-cta-row {
+            flex-direction: row;
+          }
+          .hp-btn-primary, .hp-btn-secondary {
+            width: auto;
+            flex: 1;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .hp-hero-wrap { padding: var(--space-12) 0; }
+          .hp-hero-inner {
+            flex-direction: row;
+            text-align: left;
+            justify-content: space-between;
+            gap: var(--space-12);
+          }
+          .hp-hero-left { flex: 1; text-align: left; }
+          .hp-hero-right { flex: unset; width: auto; min-height: 240px; }
+          .hp-coin-container { width: 180px; height: 180px; }
+          .hp-coin-glow { width: 240px; height: 240px; }
+          .hp-coin-shadow { width: 120px; }
+          .hp-cta-row { justify-content: flex-start; }
+          .hp-btn-primary, .hp-btn-secondary { flex: unset; width: auto; }
+          
+          .hp-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+          .hp-comments-grid { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+          .hp-comment-card { flex: 1 1 300px; max-width: 450px; }
+          .hp-section-title { font-size: 2rem; }
+        }
+      `}} />
+
+      {/* ── HIERARKI DOM HTML ─────────────────────────────────────────────── */}
+      <div className="hp-root">
+
+        {/* ── 1. HERO SECTION ─────────────────────────────────────────────── */}
+        <section className="hp-hero-wrap">
+          <div className="hp-container">
+            <div className="hp-hero-inner">
+
+              {/* Teks Salin & CTA */}
+              <div className="hp-hero-left">
+                <div className="hp-badge">
+                  <span className="hp-badge-dot" aria-hidden="true" />
+                  {getLabel('badge')}
                 </div>
-                <div style={{ marginLeft: 'auto', width: '20px', height: '15px', position: 'relative' }}>
-                  <Image 
-                    src={`https://flagcdn.com/w20/${comment.country.toLowerCase()}.png`} 
-                    alt="Flag" 
-                    fill
-                  />
+
+                <h1 className="hp-headline">
+                  <span className="hp-headline-accent">Worldcoin</span>{' '}
+                  {dataHalaman?.title
+                    ? dataHalaman.title.replace(/worldcoin/i, '').trim()
+                    : 'Cash Out'}
+                </h1>
+
+                <p className="hp-body">
+                  {dataHalaman?.content || 'Content Not Found'}
+                </p>
+
+                <div className="hp-cta-row">
+                  <Link href="/tarik-worldcoin-ke-cash" className="hp-btn-primary">
+                    {getLabel('btnCair')}
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </Link>
+                  <button className="hp-btn-secondary">
+                    {getLabel('btnRate')}
+                  </button>
                 </div>
               </div>
-              <div style={{ color: '#fbbf24', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{comment.rating}</div>
-              <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: '1.5', margin: 0 }}>
-                &ldquo;{comment.text}&rdquo;
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-    </div>
+              {/* Visual Koin 3D (Fluid & Compact on Mobile) */}
+              <div className="hp-hero-right">
+                <div className="hp-coin-glow" aria-hidden="true" />
+                <div className="hp-coin-shadow" aria-hidden="true" />
+
+                <div className="hp-coin-container" aria-label="Worldcoin 3D coin illustration">
+                  <div className="hp-coin">
+                    <div className="hp-coin-face">
+                      <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="38" stroke="#e2e8f0" strokeWidth="7" fill="none"/>
+                        <line x1="12" y1="50" x2="88" y2="50" stroke="#e2e8f0" strokeWidth="7" strokeLinecap="square"/>
+                        <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#e2e8f0" strokeWidth="7" fill="none" strokeLinecap="square"/>
+                      </svg>
+                    </div>
+                    <div className="hp-coin-face hp-coin-back">
+                      <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="38" stroke="#e2e8f0" strokeWidth="7" fill="none"/>
+                        <line x1="12" y1="50" x2="88" y2="50" stroke="#e2e8f0" strokeWidth="7" strokeLinecap="square"/>
+                        <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#e2e8f0" strokeWidth="7" fill="none" strokeLinecap="square"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ── 2. TRUST METRICS SECTION ────────────────────────────────────── */}
+        <div className="hp-metrics-wrap">
+          <div className="hp-container">
+            <div className="hp-metrics-grid">
+              <div className="hp-metric-card">
+                <div className="hp-metric-value">$2.5M+</div>
+                <div className="hp-metric-label">{getLabel('metric1')}</div>
+              </div>
+              <div className="hp-metric-card">
+                <div className="hp-metric-value">&lt;5 Min</div>
+                <div className="hp-metric-label">{getLabel('metric2')}</div>
+              </div>
+              <div className="hp-metric-card">
+                <div className="hp-metric-value">15K+</div>
+                <div className="hp-metric-label">{getLabel('metric3')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. GLOBAL REACH SECTION ─────────────────────────────────────── */}
+        <section className="hp-flags-wrap">
+          <div className="hp-container">
+            <div className="hp-section-eyebrow">
+              <span className="hp-section-label">Global Reach</span>
+              <h2 className="hp-section-title">{getLabel('flagTitle')}</h2>
+              <p className="hp-section-sub">{getLabel('flagSub')}</p>
+            </div>
+
+            <div className="hp-flags-grid">
+              {globalFlags.map((flag) => (
+                <div key={flag.code} className="hp-flag-chip">
+                  <div className="hp-flag-img-wrap">
+                    <Image
+                      src={`https://flagcdn.com/w40/${flag.code}.png`}
+                      alt={`Flag of ${flag.name}`}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      sizes="20px"
+                    />
+                  </div>
+                  <span className="hp-flag-name">{flag.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. TESTIMONIALS SECTION ─────────────────────────────────────── */}
+        <section className="hp-comments-wrap">
+          <div className="hp-container">
+            <div className="hp-section-eyebrow">
+              <span className="hp-section-label">Testimonials</span>
+              <h2 className="hp-section-title">{getLabel('commentTitle')}</h2>
+              <p className="hp-section-sub">{getLabel('commentSub')}</p>
+            </div>
+
+            <div className="hp-comments-grid">
+              {dummyComments.map((comment) => (
+                <article key={comment.id} className="hp-comment-card">
+                  <div className="hp-comment-header">
+                    <div className="hp-comment-avatar" aria-hidden="true">
+                      {comment.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="hp-comment-info">
+                      <div className="hp-comment-name">{comment.name}</div>
+                      <div className="hp-comment-role">{comment.role}</div>
+                    </div>
+                    <div className="hp-comment-flag-wrap">
+                      <Image
+                        src={`https://flagcdn.com/w20/${comment.country.toLowerCase()}.png`}
+                        alt={`Flag`}
+                        fill
+                        sizes="20px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="hp-stars" aria-label={`${comment.rating} out of 5 stars`}>
+                    {Array.from({ length: comment.rating }, (_, i) => (
+                      <span key={i} className="hp-star" aria-hidden="true">★</span>
+                    ))}
+                  </div>
+
+                  <p className="hp-comment-text">
+                    &ldquo;{comment.text}&rdquo;
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </>
   );
 }
