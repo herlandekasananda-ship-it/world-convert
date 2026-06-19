@@ -1,0 +1,15 @@
+{
+  "HomePage": {
+    "badge": "⚡ Trusted & Fastest Globally",
+    "btnCair": "Withdraw Now",
+    "btnRate": "Check Today's Rate",
+    "metric1Title": "Total Successful Withdrawals",
+    "metric2Title": "Average Processing Time",
+    "metric2Value": "< 5 Minutes",
+    "metric3Title": "Global Active Users",
+    "flagSectionTitle": "Supported Worldwide",
+    "flagSectionSub": "We serve exchanges and local currency withdrawals across various official Orb countries.",
+    "commentSectionTitle": "What They Say",
+    "commentSectionSub": "Honest reviews from global customers who have successfully withdrawn their coins."
+  }
+}
