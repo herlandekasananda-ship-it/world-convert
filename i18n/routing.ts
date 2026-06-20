@@ -17,6 +17,13 @@ export const routing = defineRouting({
       en: '/withdraw-worldcoin-to-cash',
       es: '/cambiar-worldcoin-a-efectivo',
       tl: '/i-cash-out-ang-worldcoin'
+    },
+    // 🎯 TAMBAHKAN RUTE CS DI SINI AGAR TYPESCRIPT TIDAK EROR:
+    '/cs': {
+      id: '/cs',
+      en: '/cs',
+      es: '/cs',
+      tl: '/cs'
     }
   }
 });
