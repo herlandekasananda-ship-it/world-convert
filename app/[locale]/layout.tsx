@@ -15,18 +15,20 @@ interface LayoutProps {
   params: Promise<{ locale: string }>; 
 }
 
-// 🌐 GENERATE METADATA DINAMIS UNTUK SEO INTERNASIONAL
+// 🌐 GENERATE METADATA DINAMIS UNTUK SEO INTERNASIONAL (UPGRADED)
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const baseUrl = 'https://world-convert.vercel.app'; // ⚠️ Sesuaikan dengan domain asli Anda
   
-  // Konfigurasi meta tag per bahasa
+  // 1. Konfigurasi Judul Halaman (Meta Title)
   const titles: Record<string, string> = {
-    id: "WorldCair - Pencairan Worldcoin Instan & Aman",
-    es: "WorldCair - Retiro de Worldcoin Instantáneo y Seguro",
-    tl: "WorldCair - Instant at Ligtas na Pag-withdraw ng Worldcoin",
-    en: "WorldCair - Instant & Secure Worldcoin Withdrawal"
+    id: "world-convert - Pencairan Worldcoin Instan & Aman",
+    es: "world-convert - Retiro de Worldcoin Instantáneo y Seguro",
+    tl: "world-convert - Instant at Ligtas na Pag-withdraw ng Worldcoin",
+    en: "world-convert - Instant & Secure Worldcoin Withdrawal"
   };
 
+  // 2. Konfigurasi Deskripsi Halaman (Meta Description)
   const descriptions: Record<string, string> = {
     id: "Platform agen pencairan koin WLD (Worldcoin) langsung ke rekening bank lokal dan e-wallet secara instan.",
     es: "Plataforma de agentes para retirar monedas WLD directamente a su cuenta bancaria local o billetera digital.",
@@ -34,22 +36,66 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     en: "The premier agent platform to cash out WLD coins directly to your local bank account or digital wallet instantly."
   };
 
+  // 3. Konfigurasi Kata Kunci Target (Meta Keywords Upgrade)
+  const keywords: Record<string, string> = {
+    id: "pencairan worldcoin, agen wld, cara mencairkan worldcoin, jual worldcoin instan, rupiah, e-wallet, wld ke dana",
+    es: "retirar worldcoin, cambiar wld, retiro instantaneo worldcoin, agente worldcoin, cuenta bancaria, billetera digital",
+    tl: "withdraw worldcoin, paano magbenta ng wld, worldcoin philippines, cash out wld to gcash, ligtas na withdraw",
+    en: "cash out worldcoin, withdraw wld, worldcoin agent, sell worldcoin instantly, crypto to local bank, secure wld swap"
+  };
+
   const currentTitle = titles[locale] || titles['en'];
   const currentDesc = descriptions[locale] || descriptions['en'];
+  const currentKeywords = keywords[locale] || keywords['en'];
 
   return {
     title: currentTitle,
     description: currentDesc,
+    keywords: currentKeywords,
     alternates: {
-      canonical: `/${locale}`,
+      canonical: `${baseUrl}/${locale}`,
       languages: {
-        'id-ID': '/id',
-        'en-US': '/en',
-        'es-ES': '/es',
-        'fil-PH': '/tl',
+        'id-ID': `${baseUrl}/id`,
+        'en-US': `${baseUrl}/en`,
+        'es-ES': `${baseUrl}/es`,
+        'fil-PH': `${baseUrl}/tl`,
       },
     },
-    robots: { index: true, follow: true },
+    robots: { 
+      index: true, 
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    // 🚀 UPGRADE: Open Graph untuk optimalisasi saat link dibagikan di Media Sosial / Chat Apps
+    openGraph: {
+      title: currentTitle,
+      description: currentDesc,
+      url: `${baseUrl}/${locale}`,
+      siteName: 'World-convert',
+      locale: locale === 'tl' ? 'fil_PH' : locale === 'id' ? 'id_ID' : locale === 'es' ? 'es_ES' : 'en_US',
+      type: 'website',
+      images: [
+        {
+          url: `${baseUrl}/og-image.png`, // Pastikan Anda menyiapkan gambar OG ukuran 1200x630 di folder public
+          width: 1200,
+          height: 630,
+          alt: currentTitle,
+        },
+      ],
+    },
+    // 🚀 UPGRADE: Twitter Card Metadata
+    twitter: {
+      card: 'summary_large_image',
+      title: currentTitle,
+      description: currentDesc,
+      images: [`${baseUrl}/og-image.png`],
+    },
   };
 }
 
@@ -107,7 +153,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   return (
     <html lang={locale} className={inter.className}>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc', minHeight: '100vh', color: '#0f172a' }}>
-        {/* Di Next-Intl versi terbaru, properti 'locale' di provider ini sudah tidak diperlukan */}
         <NextIntlClientProvider messages={messages}>
           
           {/* Header Komponen Semantik */}
@@ -122,7 +167,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                     alt="world-convert Logo" 
                     fill 
                     style={{ objectFit: 'cover' }} 
-                    sizes="38px" // ✅ FIX: Ditambahkan agar Next.js tahu ukuran pasti gambar ini (38px) dan tidak komplain lagi
+                    sizes="38px" 
                     priority 
                   />
                 </div>

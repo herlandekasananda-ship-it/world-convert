@@ -4,7 +4,7 @@
 import { useEffect, useState, use, useRef } from 'react';
 import { Link } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image'; // 🚀 IMPORT UNTUK LOGO BRAND GRAFIS
+import Image from 'next/image'; 
 
 // Import React Icons standar Lu
 import { 
@@ -18,7 +18,8 @@ import {
   LuTrendingUp, 
   LuDollarSign,
   LuSmartphone,
-  LuChevronDown
+  LuChevronDown,
+  LuGlobe
 } from 'react-icons/lu';
 
 // Menggunakan Pack Fi (Feather Icons) khusus untuk ikon Status Alert agar bebas eror versi TS
@@ -38,7 +39,7 @@ interface PaymentOption {
   value: string;
   label: string;
   brandName: string; 
-  logoUrl: string; // 🖼 Path file gambar logo di folder public
+  logoUrl: string; 
 }
 
 export default function PencairanPage({ params }: Props) {
@@ -61,7 +62,6 @@ export default function PencairanPage({ params }: Props) {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [copied, setCopied] = useState<boolean>(false);
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const myWalletAddress = "nitayunitaa"; 
 
@@ -87,7 +87,6 @@ export default function PencairanPage({ params }: Props) {
 
   const currency = getCurrencyConfig();
 
-  // 🛠 CONFIG: Path Logo Gambar Resmi di folder /public/logos/
   const getPaymentOptions = (): PaymentOption[] => {
     switch (locale) {
       case 'id':
@@ -122,30 +121,6 @@ export default function PencairanPage({ params }: Props) {
     setAlertState({ show: true, type, message });
     setTimeout(() => setAlertState(prev => ({ ...prev, show: false })), 4000);
   };
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = '';
-
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    
-    script.innerHTML = JSON.stringify({
-      symbol: "BINANCE:WLDUSDT",
-      width: "100%",
-      height: "200",
-      locale: locale === 'tl' ? 'en' : locale,
-      dateRange: "12M",
-      colorTheme: "dark",
-      isTransparent: true,
-      autosize: false,
-      largeChartUrl: ""
-    });
-
-    containerRef.current.appendChild(script);
-  }, [locale]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -209,9 +184,9 @@ export default function PencairanPage({ params }: Props) {
     const dictionary: Record<string, Record<string, string>> = {
       title: { id: "Pencairan Worldcoin", en: "Worldcoin Cash Out", es: "Retiro de Worldcoin", tl: "Worldcoin Cash Out" },
       content: { id: "Tukar koin WLD Anda menjadi mata uang lokal dengan aman dan instan.", en: "Convert your WLD coins into local currency safely and instantly.", es: "Convierta sus monedas WLD a su moneda local al instante.", tl: "I-convert ang iyong WLD koin sa lokal na pera nang mabilis." },
-      btnKembali: { id: "Kembali", en: "Back", es: "Volver", tl: "Bumalik" },
+      btnKembali: { id: "Kembali Halaman Utama", en: "Back to Home", es: "Volver al Inicio", tl: "Bumalik sa Home" },
       labelMetode: { id: "1. Pilih Metode Pembayaran Tujuan", en: "1. Select Receiving Method", es: "1. Seleccionar Método", tl: "1. Pamamaraan ng Pag-withdraw" },
-      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad de WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
+      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad di WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
       btnSubmit: { id: "Lanjutkan Pencairan", en: "Continue Cash Out", es: "Continuar Retiro", tl: "Magpatuloy sa Pag-withdraw" },
       btnLoading: { id: "Memproses...", en: "Processing...", es: "Procesando...", tl: "Prino-proseso..." },
       livePrice: { id: "Kurs Rate Saat Ini", en: "Current Live Rate", es: "Precio en Vivo", tl: "Live na Presyo" },
@@ -220,7 +195,8 @@ export default function PencairanPage({ params }: Props) {
       doneTransfer: { id: "Saya Sudah Transfer Ke Agen", en: "I Have Sent the WLD", es: "Ya He Transferido", tl: "Naka-transfer Na Ako" },
       copyBtn: { id: "Salin", en: "Copy", es: "Copiar", tl: "Kopyahin" },
       copiedBtn: { id: "Tersalin!", en: "Copied!", es: "¡Copiado!", tl: "Na-kopya na!" },
-      targetWalletText: { id: "Username Tujuan (World App):", en: "Target Username (World App):", es: "Usuario de Destino (World App):", tl: "Target na Username (World App):" }
+      targetWalletText: { id: "Username Tujuan (World App):", en: "Target Username (World App):", es: "Usuario de Destino (World App):", tl: "Target na Username (World App):" },
+      globalSupport: { id: "Mendukung Pencairan Lintas Negara Secara Instan", en: "Supporting Cross-Border Instant Cash Out", es: "Soporte de Retiro Instantáneo Internacional", tl: "Suportado ang Instant Cash Out sa Buong Mundo" }
     };
     return dictionary[key]?.[locale] || dictionary[key]?.['en'];
   };
@@ -281,7 +257,7 @@ export default function PencairanPage({ params }: Props) {
     { id: 4, title: { id: "Langkah 4: Pilih Tombol Kirim", en: "Step 4: Select Send Button", es: "Paso 4: Seleccionar Enviar", tl: "Hakbang 4: Pilihin ang Send Button" }, desc: { id: "Pilih opsi 'Kirim' atau 'Send' untuk memulai pemindahan koin WLD Anda.", en: "Select the 'Send' option to initiate your WLD coin transfer.", es: "Seleccione la opción 'Enviar' para iniciar la transferencia de WLD.", tl: "Pilihin ang 'Send' na opsyon para simulan ang pag-transfer ng WLD." } },
     { id: 5, title: { id: "Langkah 5: Tempel Username Tujuan", en: "Step 5: Paste Target Username", es: "Paso 5: Pegar Usuario Destino", tl: "Hakbang 5: I-paste ang Username" }, desc: { id: "Tempelkan (Paste) nama username koin yang sudah disalin tadi ke dalam kolom pencarian penerima.", en: "Paste the copied username into the recipient search bar.", es: "Pegue el nombre de usuario copiado en la barra de búsqueda de destinatarios.", tl: "I-paste ang kinopyang username sa search bar ng tatanggap." } },
     { id: 6, title: { id: "Langkah 6: Masukkan Jumlah WLD", en: "Step 6: Enter WLD Amount", es: "Paso 6: Ingresar Cantidad WLD", tl: "Hakbang 6: Ilagay ang Halaga ng WLD" }, desc: { id: "Masukkan jumlah koin WLD yang ingin dicairkan sesuai dengan nominal yang Anda input di website ini.", en: "Enter the amount of WLD coins to cash out, matching your input on this website.", es: "Ingrese la cantidad de WLD a retirar, coincidiendo con lo ingresado en este sitio web.", tl: "Ilagay ang halaga ng WLD na nais i-cash out, na tumutugma sa inilagay mo sa website na ito." } },
-    { id: 7, title: { id: "Langkah 7: Konfirmasi Pengiriman", en: "Step 7: Confirm Shipment", es: "Paso 7: Confirmar Envío", tl: "Hakbang 7: Kumpirmahin ang Pagpapadala" }, desc: { id: "Periksa kembali nominal transfer, lalu lakukan konfirmasi pengiriman hingga transaksi sukses.", en: "Double-check the transfer amount, then confirm the transfer until it succeeds.", es: "Verifique el monto de la transferencia, luego confirme el envío hasta que sea exitoso.", tl: "Suriin muli ang halaga ng transfer, pagkatapos ay kumpirmahin ang pagpapadala hanggang sa magtagumpay." } },
+    { id: 7, title: { id: "Langkah 7: Konfirmasi Pengiriman", en: "Step 7: Confirm Shipment", es: "Paso 7: Confirmar Envío", tl: "Hakbang 7: Kumpirmahin ang Pagpapadala" }, desc: { id: "Periksa kembali nominal transfer, lalu lakukan konfirmasi pengiriman hingga transaksi sukses.", en: "Double-check the transfer amount, then confirm the transfer until it succeeds.", es: "Verifique el monto de la transferencia, luego confirme el envío hasta que sea exitoso.", tl: "Suriin muli ang halaga ng transfer, pagkatapos ay kumpirmahin ang pagpapadala hanggang sa magtapumay." } },
     { id: 8, title: { id: "Langkah 8: Selesaikan Transaksi", en: "Step 8: Complete Transaction", es: "Paso 8: Completar Transacción", tl: "Hakbang 8: Tapusin ang Transaksyon" }, desc: { id: "Jika transfer sudah berhasil, klik tombol di bawah untuk instruksi otomatis pencairan uang ke rekening lokal Anda.", en: "If the transfer is successful, click the button below to initiate automatic fund withdrawal to your local bank.", es: "Si la transferencia fue exitosa, haga clic abajo para iniciar el retiro automático a su banco.", tl: "Kung matagumpay ang transfer, i-click ang button sa ibaba upang simulan ang awtomatikong pagpapadala sa iyong bank account." } }
   ];
 
@@ -290,9 +266,8 @@ export default function PencairanPage({ params }: Props) {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      style={{ padding: '1rem', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '520px', margin: '0 auto', color: '#1e293b', boxSizing: 'border-box' }}
+      style={{ padding: '1.25rem', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '480px', margin: '0 auto', color: '#1e293b', boxSizing: 'border-box' }}
     >
-      
       {/* 🔔 CUSTOM ANIMATED ALERT BANNER */}
       <AnimatePresence>
         {alertState.show && (
@@ -302,7 +277,7 @@ export default function PencairanPage({ params }: Props) {
             exit={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
             style={{
               position: 'fixed', top: 0, left: '50%',
-              zIndex: 9999, width: 'calc(100% - 2rem)', maxWidth: '460px',
+              zIndex: 9999, width: 'calc(100% - 2rem)', maxWidth: '440px',
               backgroundColor: alertState.type === 'success' ? '#10b981' : '#ef4444',
               color: '#ffffff', padding: '0.85rem 1.25rem', borderRadius: '12px',
               boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15)', fontWeight: '600',
@@ -316,66 +291,88 @@ export default function PencairanPage({ params }: Props) {
       </AnimatePresence>
 
       {/* Nav Kembali */}
-      <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.25rem' }}>
-        <LuArrowLeft size={16} />
+      <Link href="/" style={{ color: '#4b5563', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.5rem', backgroundColor: '#f1f5f9', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}>
+        <LuArrowLeft size={14} />
         {getLabel('btnKembali')}
       </Link>
 
       {/* Header Utama */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ color: '#0f172a', fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+        <h1 style={{ color: '#0f172a', fontSize: '1.6rem', fontWeight: '800', marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>
           {getLabel('title')}
         </h1>
-        <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', margin: 0 }}>
+        <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
           {getLabel('content')}
         </p>
       </div>
 
-      {/* Widget Mini Live Price */}
-      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#ffffff', padding: '1rem 1.25rem', borderRadius: '16px', marginBottom: '1rem', border: '1px solid #334155', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
+      {/* 🖼️ BANNER ANIMASI NEGARA GLOBAL */}
+      <div style={{ position: 'relative', width: '100%', height: '110px', borderRadius: '16px', overflow: 'hidden', marginBottom: '1rem', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', padding: '0 1.25rem', boxSizing: 'border-box', border: '1px solid #1e293b' }}>
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 50, ease: "linear" }}
+          style={{ position: 'absolute', right: '-15px', width: '140px', height: '140px', opacity: 0.25, pointerEvents: 'none' }}
+        >
+          <Image 
+            src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=300&auto=format&fit=crop" 
+            alt="World Globe" 
+            fill
+            sizes="140px"
+            style={{ objectFit: 'cover', borderRadius: '50%' }}
+          />
+        </motion.div>
+
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: '80%' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', backgroundColor: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', padding: '0.25rem 0.5rem', borderRadius: '99px', fontSize: '0.65rem', fontWeight: '700', marginBottom: '0.4rem', letterSpacing: '0.05em' }}>
+            <LuGlobe size={12} className="animate-spin" style={{ animationDuration: '8s' }} />
+            GLOBAL NETWORK
+          </span>
+          <h3 style={{ color: '#f8fafc', fontSize: '0.88rem', fontWeight: '700', margin: 0, lineHeight: '1.4' }}>
+            {getLabel('globalSupport')}
+          </h3>
+        </div>
+      </div>
+
+      {/* 🚀 TATA LETAK BARU: LIVE RATE CARD MINIMALIS & ELEGAN (Tanpa Kotak Hitam) */}
+      <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
         <div>
-          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#38bdf8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#2563eb', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
             <LuTrendingUp size={14} />
             {getLabel('livePrice')} ({currency.code})
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
-            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }} style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }} />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }} style={{ width: '7px', height: '7px', backgroundColor: '#10b981', borderRadius: '50%' }} />
+            <h2 style={{ fontSize: '1.35rem', fontWeight: '800', margin: 0, color: '#0f172a', letterSpacing: '-0.02em' }}>
               {isLoadingPrice ? 'Calculating...' : `${currency.symbol}${wldLocalPrice.toLocaleString(currency.localeCode, { maximumFractionDigits: locale === 'id' ? 0 : 2 })}`}
             </h2>
           </div>
         </div>
-        <div style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '0.4rem 0.6rem', borderRadius: '8px', textAlign: 'right' }}>
-          <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' }}>Global (Binance)</span>
-          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#f8fafc' }}>
+        <div style={{ borderLeft: '1px solid #f1f5f9', paddingLeft: '1rem', textAlign: 'right' }}>
+          <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Binance Global</span>
+          <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#334155', marginTop: '0.1rem' }}>
             {isLoadingPrice ? '...' : `$${wldPriceUSD.toFixed(2)}`}
           </div>
         </div>
       </div>
 
-      {/* TradingView Mini Chart Container */}
-      <div ref={containerRef} style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid #e2e8f0', backgroundColor: '#1c2030' }} />
-
-      {/* Form Utama Modern & Mobile Friendly */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '1.5rem', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+      {/* Form Utama Modern */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '1.25rem', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
         
-        {/* 🌟 FIELD 1: CUSTOM BRANDED METHOD SELECTOR (MENGGUNAKAN LOGO ASLI BRAND) */}
+        {/* FIELD 1: CUSTOM BRANDED METHOD SELECTOR */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#334155' }}>
-            <LuWallet size={16} style={{ color: '#2563eb' }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
+            <LuWallet size={15} style={{ color: '#2563eb' }} />
             {getLabel('labelMetode')}
           </label>
           
-          {/* Tombol Utama Dropdown */}
           <div 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', boxSizing: 'border-box', userSelect: 'none' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', boxSizing: 'border-box', userSelect: 'none', transition: 'border-color 0.2s' }}
           >
             {selectedOption ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {/* 🖼 LOGO PILIHAN UTAMA */}
-                <div style={{ position: 'relative', width: '24px', height: '24px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
-                  <Image src={selectedOption.logoUrl} alt={selectedOption.brandName} fill sizes="24px" style={{ objectFit: 'contain' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ position: 'relative', width: '22px', height: '22px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
+                  <Image src={selectedOption.logoUrl} alt={selectedOption.brandName} fill sizes="22px" style={{ objectFit: 'contain' }} />
                 </div>
                 <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedOption.brandName}</span>
               </div>
@@ -383,18 +380,17 @@ export default function PencairanPage({ params }: Props) {
               <span style={{ color: '#94a3b8' }}>-- Tap untuk memilih metode --</span>
             )}
             <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }}>
-              <LuChevronDown size={18} style={{ color: '#64748b' }} />
+              <LuChevronDown size={16} style={{ color: '#64748b' }} />
             </motion.div>
           </div>
 
-          {/* List Menu Dropdown Pilihan */}
           <AnimatePresence>
             {isDropdownOpen && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 4 }}
                 exit={{ opacity: 0, y: -10 }}
-                style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', zIndex: 100, overflow: 'hidden', padding: '0.35rem' }}
+                style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', boxShadow: '0 12px 20px -3px rgba(0, 0, 0, 0.08)', zIndex: 100, overflow: 'hidden', padding: '0.25rem' }}
               >
                 {paymentOptions.map((option) => (
                   <div 
@@ -403,23 +399,16 @@ export default function PencairanPage({ params }: Props) {
                       setMetodeBayar(option.value);
                       setIsDropdownOpen(false);
                     }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: '8px', cursor: 'pointer', backgroundColor: metodeBayar === option.value ? '#eff6ff' : 'transparent', transition: 'background-color 0.15s ease' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', backgroundColor: metodeBayar === option.value ? '#eff6ff' : 'transparent', transition: 'background-color 0.15s ease' }}
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : '#f8fafc')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : 'transparent')}
                   >
-                    {/* 🖼 GAMBAR LOGO BRAND RESMI PADA DROPDOWN */}
-                    <div style={{ position: 'relative', width: '32px', height: '32px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, backgroundColor: '#f8fafc', border: '1px solid #f1f5f9', padding: '2px' }}>
-                      <Image 
-                        src={option.logoUrl} 
-                        alt={option.brandName} 
-                        fill 
-                        sizes="32px"
-                        style={{ objectFit: 'contain' }} 
-                      />
+                    <div style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, backgroundColor: '#f8fafc', border: '1px solid #f1f5f9', padding: '2px' }}>
+                      <Image src={option.logoUrl} alt={option.brandName} fill sizes="28px" style={{ objectFit: 'contain' }} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontWeight: '700', fontSize: '0.9rem', color: '#0f172a' }}>{option.brandName}</span>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{option.label}</span>
+                      <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0f172a' }}>{option.brandName}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{option.label}</span>
                     </div>
                   </div>
                 ))}
@@ -432,8 +421,8 @@ export default function PencairanPage({ params }: Props) {
         <AnimatePresence initial={false}>
           {metodeBayar !== "" && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#334155' }}>
-                <LuCreditCard size={16} style={{ color: '#2563eb' }} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
+                <LuCreditCard size={15} style={{ color: '#2563eb' }} />
                 {dynamicInput.label}
               </label>
               <input 
@@ -441,7 +430,7 @@ export default function PencairanPage({ params }: Props) {
                 placeholder={dynamicInput.placeholder}
                 value={nomorRekening}
                 onChange={(e) => setNomorRekening(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.95rem', outline: 'none' }} 
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem', outline: 'none', transition: 'border-color 0.2s' }} 
                 required 
               />
             </motion.div>
@@ -450,8 +439,8 @@ export default function PencairanPage({ params }: Props) {
 
         {/* FIELD 3: Input Nominal Jumlah Coin */}
         <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#334155' }}>
-            <LuCoins size={16} style={{ color: '#2563eb' }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
+            <LuCoins size={15} style={{ color: '#2563eb' }} />
             {getLabel('labelJumlah')}
           </label>
           <div style={{ position: 'relative' }}>
@@ -462,23 +451,23 @@ export default function PencairanPage({ params }: Props) {
               placeholder="Minimal 3 WLD" 
               value={jumlahWld}
               onChange={(e) => setJumlahWld(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem 3.5rem 0.75rem 0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '1rem', outline: 'none' }} 
+              style={{ width: '100%', padding: '0.75rem 3.5rem 0.75rem 0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.95rem', outline: 'none' }} 
               required 
             />
-            <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#64748b', fontSize: '0.9rem' }}>WLD</span>
+            <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#64748b', fontSize: '0.85rem' }}>WLD</span>
           </div>
         </div>
 
-        {/* Kalkulator Terintegrasi */}
+        {/* Kalkulator Terintegrasi Bersih */}
         <AnimatePresence>
           {Number(jumlahWld) >= 3 && (
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-              <LuDollarSign size={20} style={{ color: '#166534', marginTop: '0.15rem' }} />
+            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem 1rem', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <LuDollarSign size={18} style={{ color: '#166534' }} />
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                <span style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
                   {getLabel('estimasi')}
                 </span>
-                <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#166534', marginTop: '0.1rem' }}>
+                <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#166534', marginTop: '0.05rem', letterSpacing: '-0.02em' }}>
                   {currency.symbol}{totalEstimasiLokal.toLocaleString(currency.localeCode, { maximumFractionDigits: locale === 'id' ? 0 : 2 })}
                 </div>
               </div>
@@ -489,7 +478,7 @@ export default function PencairanPage({ params }: Props) {
         <button 
           type="submit" 
           disabled={isSubmitting}
-          style={{ width: '100%', backgroundColor: isSubmitting ? '#93c5fd' : '#2563eb', color: '#ffffff', padding: '0.85rem', borderRadius: '12px', border: 'none', fontWeight: '700', fontSize: '1rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', marginTop: '0.25rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ width: '100%', backgroundColor: isSubmitting ? '#93c5fd' : '#2563eb', color: '#ffffff', padding: '0.85rem', borderRadius: '12px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', marginTop: '0.25rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
         >
           {isSubmitting ? getLabel('btnLoading') : getLabel('btnSubmit')}
         </button>
@@ -498,11 +487,11 @@ export default function PencairanPage({ params }: Props) {
       {/* POPUP MODAL LANGKAH TRANSFER WLD */}
       <AnimatePresence>
         {showStepModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', boxSizing: 'border-box' }}>
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '440px', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', position: 'relative', boxSizing: 'border-box' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vw', minHeight: '100vh', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', boxSizing: 'border-box' }}>
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative', boxSizing: 'border-box' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#2563eb', backgroundColor: '#eff6ff', padding: '0.3rem 0.6rem', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#2563eb', backgroundColor: '#eff6ff', padding: '0.3rem 0.6rem', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <LuSmartphone size={12} />
                   Langkah {currentStep} dari 8
                 </span>
@@ -511,23 +500,23 @@ export default function PencairanPage({ params }: Props) {
                 </button>
               </div>
 
-              <div style={{ minHeight: '130px' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#0f172a', marginBottom: '0.5rem' }}>
+              <div style={{ minHeight: '120px' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a', marginBottom: '0.5rem' }}>
                   {stepsData[currentStep - 1].title[locale] || stepsData[currentStep - 1].title['en']}
                 </h3>
-                <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1rem' }}>
+                <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '1rem' }}>
                   {stepsData[currentStep - 1].desc[locale] || stepsData[currentStep - 1].desc['en']}
                 </p>
 
                 {currentStep === 1 && (
                   <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.75rem 1rem', borderRadius: '12px', marginBottom: '1rem' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', marginBottom: '0.25rem' }}>
+                    <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#64748b', marginBottom: '0.25rem' }}>
                       {getLabel('targetWalletText')}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: '700', color: '#0f172a' }}>@{myWalletAddress}</span>
-                      <button type="button" onClick={handleCopy} style={{ backgroundColor: copied ? '#10b981' : '#0f172a', color: '#ffffff', border: 'none', padding: '0.35rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        {copied ? <LuCheck size={14} /> : <LuCopy size={14} />}
+                      <span style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>@{myWalletAddress}</span>
+                      <button type="button" onClick={handleCopy} style={{ backgroundColor: copied ? '#10b981' : '#0f172a', color: '#ffffff', border: 'none', padding: '0.35rem 0.65rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        {copied ? <LuCheck size={12} /> : <LuCopy size={12} />}
                         {copied ? getLabel('copiedBtn') : getLabel('copyBtn')}
                       </button>
                     </div>
@@ -536,18 +525,18 @@ export default function PencairanPage({ params }: Props) {
               </div>
 
               {/* Progress Tracker Bar */}
-              <div style={{ width: '100%', height: '5px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden', marginBottom: '1.25rem' }}>
+              <div style={{ width: '100%', height: '4px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden', marginBottom: '1.25rem' }}>
                 <div style={{ width: `${(currentStep / 8) * 100}%`, height: '100%', backgroundColor: '#2563eb', transition: 'width 0.2s ease' }} />
               </div>
 
               <div>
                 {currentStep < 8 ? (
-                  <button type="button" onClick={() => setCurrentStep((prev) => prev + 1)} style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '0.75rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: 'pointer' }}>
+                  <button type="button" onClick={() => setCurrentStep((prev) => prev + 1)} style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '0.7rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' }}>
                     {getLabel('next')}
                   </button>
                 ) : (
-                  <button type="button" onClick={handleFinalSubmit} style={{ width: '100%', backgroundColor: '#10b981', color: '#ffffff', padding: '0.75rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-                    <FiCheckCircle size={16} />
+                  <button type="button" onClick={handleFinalSubmit} style={{ width: '100%', backgroundColor: '#10b981', color: '#ffffff', padding: '0.7rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                    <FiCheckCircle size={15} />
                     {getLabel('doneTransfer')}
                   </button>
                 )}
