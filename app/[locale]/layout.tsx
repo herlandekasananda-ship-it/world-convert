@@ -1,3 +1,4 @@
+ 
 // app/[locale]/layout.tsx
 import { ReactNode } from 'react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -205,7 +206,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
               <div style={styles.rightNav}>
                 
                 {/* 🚀 TOMBOL CUSTOMER SERVICE MENYESUAIKAN BAHASA */}
-                <Link href="/cs" style={styles.csButton}>
+                <Link href="/" style={styles.csButton}>
                   {csLabels[locale] || csLabels['en']}
                 </Link>
 
