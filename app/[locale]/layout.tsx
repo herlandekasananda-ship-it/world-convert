@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Inter } from 'next/font/google'; // 🚀 PENGOPTIMALAN FONT UNTUK SEO
 import { Metadata } from 'next';
+import { Link } from '@/i18n/routing'; // 🚀 IMPORT LINK INTERNASIONAL UNTUK NAVIGASI CS
 
 // Memuat font Inter secara efisien tanpa layout shift
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
@@ -72,7 +73,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         'max-snippet': -1,
       },
     },
-    // 🚀 UPGRADE: Open Graph untuk optimalisasi saat link dibagikan di Media Sosial / Chat Apps
     openGraph: {
       title: currentTitle,
       description: currentDesc,
@@ -82,14 +82,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       type: 'website',
       images: [
         {
-          url: `${baseUrl}/og-image.png`, // Pastikan Anda menyiapkan gambar OG ukuran 1200x630 di folder public
+          url: `${baseUrl}/og-image.png`,
           width: 1200,
           height: 630,
           alt: currentTitle,
         },
       ],
     },
-    // 🚀 UPGRADE: Twitter Card Metadata
     twitter: {
       card: 'summary_large_image',
       title: currentTitle,
@@ -106,7 +105,7 @@ const styles = {
   header: {
     backgroundColor: '#ffffff',
     borderBottom: '1px solid #f1f5f9',
-    padding: '0.85rem 2rem',
+    padding: '0.85rem 1.5rem',
     position: 'sticky' as const,
     top: 0,
     zIndex: 50,
@@ -135,9 +134,27 @@ const styles = {
   },
   logoText: {
     fontWeight: '800',
-    fontSize: '1.3rem',
+    fontSize: '1.25rem',
     color: '#0f172a',
     letterSpacing: '-0.03em'
+  },
+  rightNav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem'
+  },
+  csButton: {
+    backgroundColor: '#2563eb',
+    color: '#ffffff',
+    textDecoration: 'none',
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    padding: '0.5rem 0.9rem',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.1)',
+    transition: 'all 0.2s ease',
+    display: 'inline-flex',
+    alignItems: 'center'
   },
   mainContent: {
     maxWidth: '1200px',
@@ -149,6 +166,14 @@ const styles = {
 export default async function LocaleLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
   const messages = await getMessages();
+
+  // Label multibahasa untuk tombol Customer Service
+  const csLabels: Record<string, string> = {
+    id: "Hubungi CS",
+    en: "Contact CS",
+    es: "Soporte CS",
+    tl: "I-contact ang CS"
+  };
 
   return (
     <html lang={locale} className={inter.className}>
@@ -176,10 +201,20 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                 </span>
               </div>
               
-              {/* Menu Navigasi Bahasa */}
-              <nav aria-label="Language Selector">
-                <LanguageSwitcher />
-              </nav>
+              {/* Kontainer Navigasi Kanan (CS + Language Selector) */}
+              <div style={styles.rightNav}>
+                
+                {/* 🚀 TOMBOL CUSTOMER SERVICE MENYESUAIKAN BAHASA */}
+                <Link href="/cs" style={styles.csButton}>
+                  {csLabels[locale] || csLabels['en']}
+                </Link>
+
+                {/* Menu Navigasi Bahasa */}
+                <nav aria-label="Language Selector">
+                  <LanguageSwitcher />
+                </nav>
+
+              </div>
 
             </div>
           </header>
