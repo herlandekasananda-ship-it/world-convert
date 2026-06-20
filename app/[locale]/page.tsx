@@ -1,31 +1,25 @@
 // app/[locale]/page.tsx
-// ✅ REDESIGNED: Premium Mobile-First SaaS Layout — Clean design system for mobile users
 import { getDatabase, KontenData } from '@/lib/db';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
+import { use } from 'react';
+import InteractiveCoin from './InteractiveCoin'; // Mengimpor koin interaktif
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
-export async function generateStaticParams() {
-  return [
-    { locale: 'id' },
-    { locale: 'en' },
-    { locale: 'es' },
-    { locale: 'tl' }
-  ];
-}
-
-export default async function HomePage({ params }: Props) {
-  const { locale } = await params;
-  const db = await getDatabase();
-
+export default function HomePage({ params }: Props) {
+  // Unwrapping params secara asinkron di Server Component
+  const { locale } = use(params);
+  
+  // Mengambil database langsung di server side (Aman dari Eror Chunk!)
+  const db = use(getDatabase());
   const dataHalaman = db.data.konten.find(
     (item: KontenData) => item.page === 'home' && item.locale === locale
-  );
+  ) || null;
 
-  // ── i18n dictionary (Fully Retained) ──────────────────────────────────────
+  // ── i18n dictionary ──────────────────────────────────────
   const getLabel = (key: string): string => {
     const dictionary: Record<string, Record<string, string>> = {
       badge: {
@@ -37,7 +31,7 @@ export default async function HomePage({ params }: Props) {
       btnCair: {
         id: "Cairkan Sekarang",
         en: "Withdraw Now",
-        es: "Retirar Ahora",
+        es: "Retirar Sekarang",
         tl: "Mag-cash Out Ngayon"
       },
       btnRate: {
@@ -53,21 +47,20 @@ export default async function HomePage({ params }: Props) {
       flagSub: {
         id: "Kami melayani penukaran dan pencairan mata uang lokal di berbagai belahan negara resmi Orb.",
         en: "We serve exchanges and local currency withdrawals across various official Orb countries.",
-        es: "Atendemos intercambios y retiros en moneda local en varios países oficiales de Orb.",
+        es: "Atendemos intercambios y retiros en moneda local en varios países oficiales di Orb.",
         tl: "Nagsisilbi kami ng mga palitan at pag-withdraw ng lokal na pera sa iba't ibang opisyal na bansa ng Orb."
       },
       commentTitle: { id: "Apa Kata Mereka?", en: "What They Say", es: "¿Qué Dicen Ellos?", tl: "Ano ang Sinasabi Nila" },
       commentSub: {
         id: "Ulasan jujur dari pelanggan global yang telah berhasil mencairkan koin mereka.",
         en: "Honest reviews from global customers who have successfully withdrawn their coins.",
-        es: "Reseñas honestas di clientes globales que han retirado sus monedas con éxito.",
+        es: "Reseñas honestas di clientes globales yang han retirado sus monedas con éxito.",
         tl: "Mga tapat na pagsusuri mula sa mga global na customer na matagumpay na nag-withdraw."
       }
     };
     return dictionary[key]?.[locale] || dictionary[key]?.['en'] || '';
   };
 
-  // ── Dummy Data ────────────────────────────────────────────────────────────
   const dummyComments = [
     {
       id: 1,
@@ -104,7 +97,6 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      {/* ── DESIGN SYSTEM + MOBILE INDEPENDENT OPTIMIZATIONS ───────────────── */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root {
           --clr-bg:          #F8FAFC;
@@ -162,7 +154,7 @@ export default async function HomePage({ params }: Props) {
           padding: 0 var(--space-5);
         }
 
-        /* ── HERO OPTIMIZED FOR MOBILE FIRST ───────────────────────────────── */
+        /* ── HERO ── */
         .hp-hero-wrap {
           position: relative;
           background: var(--clr-surface);
@@ -185,15 +177,13 @@ export default async function HomePage({ params }: Props) {
           position: relative;
           z-index: 1;
           display: flex;
-          flex-direction: column-reverse; /* Coin stays on top or middle naturally in flow */
+          flex-direction: column-reverse;
           gap: var(--space-8);
           align-items: center;
           text-align: center;
         }
 
-        .hp-hero-left {
-          width: 100%;
-        }
+        .hp-hero-left { width: 100%; }
 
         .hp-badge {
           display: inline-flex;
@@ -245,7 +235,6 @@ export default async function HomePage({ params }: Props) {
           margin: 0 0 var(--space-6);
         }
 
-        /* Full Width Action Buttons on Small Mobile Screen */
         .hp-cta-row {
           display: flex;
           flex-direction: column;
@@ -281,15 +270,16 @@ export default async function HomePage({ params }: Props) {
           border: 1px solid var(--clr-border);
         }
 
-        /* ── HERO COIN FLUID MOBILE SIZE ──────────────────────────────────── */
+        /* INTERACTIVE COIN STYLES */
         .hp-hero-right {
           width: 100%;
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
-          min-height: 160px;
+          min-height: 180px;
           margin-bottom: var(--space-2);
+          touch-action: none;
         }
 
         .hp-coin-glow {
@@ -308,24 +298,12 @@ export default async function HomePage({ params }: Props) {
           background: rgba(15,23,42,0.08);
           border-radius: 50%;
           filter: blur(5px);
-          animation: shadow-float 4s ease-in-out infinite;
-        }
-
-        @keyframes shadow-float {
-          0%, 100% { transform: scaleX(1); opacity: 0.6; }
-          50%       { transform: scaleX(0.85); opacity: 0.35; }
         }
 
         .hp-coin-container {
           perspective: 1000px;
           width: 130px;
           height: 130px;
-          animation: float-coin 4s ease-in-out infinite;
-        }
-
-        @keyframes float-coin {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-12px); }
         }
 
         .hp-coin {
@@ -333,11 +311,10 @@ export default async function HomePage({ params }: Props) {
           height: 100%;
           position: relative;
           transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .hp-coin-container:hover .hp-coin {
-          transform: rotateY(360deg);
+          --coin-rx: 0deg;
+          --coin-ry: 0deg;
+          transform: rotateX(var(--coin-rx)) rotateY(var(--coin-ry));
+          transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .hp-coin-face {
@@ -353,181 +330,88 @@ export default async function HomePage({ params }: Props) {
           box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 1px 4px rgba(255,255,255,0.1);
         }
 
-        .hp-coin-back {
-          transform: rotateY(180deg);
-        }
+        .hp-coin-back { transform: rotateY(180deg); }
 
-        /* ── METRICS VERTICAL ON MOBILE ────────────────────────────────────── */
+        /* ── METRICS ── */
         .hp-metrics-wrap {
+          background: var(--clr-surface);
+          border-bottom: 1px solid var(--clr-border);
           padding: var(--space-6) 0;
         }
 
         .hp-metrics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: var(--space-3);
+          gap: var(--space-4);
+          text-align: center;
         }
 
-        .hp-metric-card {
+        .hp-metric-card { padding: var(--space-4); }
+        .hp-metric-value { font-size: 2rem; font-weight: 700; color: var(--clr-primary); }
+        .hp-metric-label { font-size: 0.85rem; color: var(--clr-text-3); margin-top: var(--space-2); }
+
+        /* ── GLOBAL REACH ── */
+        .hp-flags-wrap {
+          padding: var(--space-10) 0;
+          background: var(--clr-bg);
+          border-bottom: 1px solid var(--clr-border);
+        }
+
+        .hp-section-eyebrow { text-align: center; margin-bottom: var(--space-8); }
+        .hp-section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--clr-primary); font-weight: 700; }
+        .hp-section-title { font-size: 1.5rem; font-weight: 700; margin: var(--space-2) 0; }
+        .hp-section-sub { font-size: 0.9rem; color: var(--clr-text-3); max-width: 600px; margin: 0 auto; }
+        .hp-flags-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+
+        .hp-flag-chip {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
           background: var(--clr-surface);
           border: 1px solid var(--clr-border);
+          padding: 0.5rem var(--space-4);
           border-radius: var(--radius-md);
-          padding: var(--space-4);
-          text-align: center;
           box-shadow: var(--shadow-xs);
         }
 
-        .hp-metric-value {
-          font-size: 1.75rem;
-          font-weight: 800;
-          color: var(--clr-primary);
-          margin-bottom: 2px;
-        }
+        .hp-flag-img-wrap { position: relative; width: 20px; height: 15px; border-radius: 2px; overflow: hidden; }
+        .hp-flag-name { font-size: 0.85rem; font-weight: 500; color: var(--clr-text-2); }
 
-        .hp-metric-label {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--clr-text-3);
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-        }
-
-        /* ── SECTION HEADERS FOR MOBILE ────────────────────────────────────── */
-        .hp-flags-wrap, .hp-comments-wrap {
-          padding: var(--space-10) 0;
-          border-top: 1px solid var(--clr-border);
-        }
-
-        .hp-flags-wrap { background: var(--clr-surface); }
-
-        .hp-section-eyebrow {
-          text-align: center;
-          margin-bottom: var(--space-6);
-        }
-
-        .hp-section-label {
-          display: inline-block;
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: var(--clr-primary);
-          margin-bottom: var(--space-2);
-        }
-
-        .hp-section-title {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: var(--clr-text-1);
-          margin: 0 0 var(--space-2);
-        }
-
-        .hp-section-sub {
-          font-size: 0.875rem;
-          color: var(--clr-text-3);
-          line-height: 1.5;
-        }
-
-        /* ── CHIPS & CARDS ─────────────────────────────────────────────────── */
-        .hp-flags-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-2);
-          justify-content: center;
-        }
-
-        .hp-flag-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-2);
-          background: var(--clr-bg);
-          border: 1px solid var(--clr-border);
-          border-radius: var(--radius-md);
-          padding: 0.5rem var(--space-4);
-        }
-
-        .hp-flag-img-wrap {
-          width: 20px;
-          height: 15px;
-          position: relative;
-          border-radius: 2px;
-          overflow: hidden;
-        }
-
-        .hp-flag-name {
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: var(--clr-text-2);
-        }
-
-        .hp-comments-grid {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .hp-comment-card {
-          background: var(--clr-surface);
-          border: 1px solid var(--clr-border);
-          border-radius: var(--radius-lg);
-          padding: var(--space-5);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .hp-comment-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: var(--space-3);
-        }
-
+        /* ── TESTIMONIALS ── */
+        .hp-comments-wrap { padding: var(--space-10) 0; background: var(--clr-surface); }
+        .hp-comments-grid { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-6); }
+        .hp-comment-card { background: var(--clr-bg); border: 1px solid var(--clr-border-soft); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); }
+        .hp-comment-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+        
         .hp-comment-avatar {
           width: 36px;
           height: 36px;
+          background: var(--clr-primary);
+          color: white;
+          font-weight: 600;
+          font-size: 0.85rem;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          font-size: 0.8rem;
-          font-weight: 700;
-          margin-right: var(--space-3);
         }
 
         .hp-comment-info { flex: 1; }
-        .hp-comment-name { font-size: 0.9rem; font-weight: 700; color: var(--clr-text-1); }
-        .hp-comment-role { font-size: 0.7rem; color: var(--clr-text-3); }
-        
-        .hp-comment-flag-wrap {
-          width: 20px;
-          height: 14px;
-          position: relative;
-        }
+        .hp-comment-name { font-size: 0.9rem; font-weight: 600; color: var(--clr-text-1); }
+        .hp-comment-role { font-size: 0.75rem; color: var(--clr-text-3); }
+        .hp-comment-flag-wrap { position: relative; width: 20px; height: 15px; }
+        .hp-stars { color: #F59E0B; font-size: 0.85rem; margin-bottom: var(--space-2); }
+        .hp-comment-text { font-size: 0.85rem; line-height: 1.5; color: var(--clr-text-2); }
 
-        .hp-stars { display: flex; gap: 2px; margin-bottom: var(--space-2); }
-        .hp-star { color: #F59E0B; font-size: 0.8rem; }
-        .hp-comment-text { font-size: 0.875rem; line-height: 1.5; color: var(--clr-text-2); margin: 0; font-style: italic; }
-
-        /* ── TABLET & DESKTOP RESPONSIVE ENHANCEMENTS ─────────────────────── */
+        /* ── RESPONSIVE RESPONSIVE ── */
         @media (min-width: 640px) {
-          .hp-cta-row {
-            flex-direction: row;
-          }
-          .hp-btn-primary, .hp-btn-secondary {
-            width: auto;
-            flex: 1;
-          }
+          .hp-cta-row { flex-direction: row; }
+          .hp-btn-primary, .hp-btn-secondary { width: auto; flex: 1; }
         }
 
         @media (min-width: 768px) {
           .hp-hero-wrap { padding: var(--space-12) 0; }
-          .hp-hero-inner {
-            flex-direction: row;
-            text-align: left;
-            justify-content: space-between;
-            gap: var(--space-12);
-          }
+          .hp-hero-inner { flex-direction: row; text-align: left; justify-content: space-between; gap: var(--space-12); }
           .hp-hero-left { flex: 1; text-align: left; }
           .hp-hero-right { flex: unset; width: auto; min-height: 240px; }
           .hp-coin-container { width: 180px; height: 180px; }
@@ -543,15 +427,12 @@ export default async function HomePage({ params }: Props) {
         }
       `}} />
 
-      {/* ── HIERARKI DOM HTML ─────────────────────────────────────────────── */}
       <div className="hp-root">
-
-        {/* ── 1. HERO SECTION ─────────────────────────────────────────────── */}
+        {/* ── 1. HERO SECTION ── */}
         <section className="hp-hero-wrap">
           <div className="hp-container">
             <div className="hp-hero-inner">
 
-              {/* Teks Salin & CTA */}
               <div className="hp-hero-left">
                 <div className="hp-badge">
                   <span className="hp-badge-dot" aria-hidden="true" />
@@ -566,7 +447,7 @@ export default async function HomePage({ params }: Props) {
                 </h1>
 
                 <p className="hp-body">
-                  {dataHalaman?.content || 'Content Not Found'}
+                  {dataHalaman?.content || 'Loading Content...'}
                 </p>
 
                 <div className="hp-cta-row">
@@ -582,36 +463,14 @@ export default async function HomePage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Visual Koin 3D (Fluid & Compact on Mobile) */}
-              <div className="hp-hero-right">
-                <div className="hp-coin-glow" aria-hidden="true" />
-                <div className="hp-coin-shadow" aria-hidden="true" />
-
-                <div className="hp-coin-container" aria-label="Worldcoin 3D coin illustration">
-                  <div className="hp-coin">
-                    <div className="hp-coin-face">
-                      <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="38" stroke="#e2e8f0" strokeWidth="7" fill="none"/>
-                        <line x1="12" y1="50" x2="88" y2="50" stroke="#e2e8f0" strokeWidth="7" strokeLinecap="square"/>
-                        <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#e2e8f0" strokeWidth="7" fill="none" strokeLinecap="square"/>
-                      </svg>
-                    </div>
-                    <div className="hp-coin-face hp-coin-back">
-                      <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="38" stroke="#e2e8f0" strokeWidth="7" fill="none"/>
-                        <line x1="12" y1="50" x2="88" y2="50" stroke="#e2e8f0" strokeWidth="7" strokeLinecap="square"/>
-                        <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#e2e8f0" strokeWidth="7" fill="none" strokeLinecap="square"/>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Memanggil Komponen Client Koin */}
+              <InteractiveCoin />
 
             </div>
           </div>
         </section>
 
-        {/* ── 2. TRUST METRICS SECTION ────────────────────────────────────── */}
+        {/* ── 2. TRUST METRICS SECTION ── */}
         <div className="hp-metrics-wrap">
           <div className="hp-container">
             <div className="hp-metrics-grid">
@@ -631,7 +490,7 @@ export default async function HomePage({ params }: Props) {
           </div>
         </div>
 
-        {/* ── 3. GLOBAL REACH SECTION ─────────────────────────────────────── */}
+        {/* ── 3. GLOBAL REACH SECTION ── */}
         <section className="hp-flags-wrap">
           <div className="hp-container">
             <div className="hp-section-eyebrow">
@@ -659,7 +518,7 @@ export default async function HomePage({ params }: Props) {
           </div>
         </section>
 
-        {/* ── 4. TESTIMONIALS SECTION ─────────────────────────────────────── */}
+        {/* ── 4. TESTIMONIALS SECTION ── */}
         <section className="hp-comments-wrap">
           <div className="hp-container">
             <div className="hp-section-eyebrow">

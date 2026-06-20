@@ -107,7 +107,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   return (
     <html lang={locale} className={inter.className}>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc', minHeight: '100vh', color: '#0f172a' }}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        {/* Di Next-Intl versi terbaru, properti 'locale' di provider ini sudah tidak diperlukan */}
+        <NextIntlClientProvider messages={messages}>
           
           {/* Header Komponen Semantik */}
           <header style={styles.header}>
@@ -117,15 +118,16 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
               <div style={styles.logoWrapper}>
                 <div style={styles.logoImageContainer}>
                   <Image 
-                    src="/logo.jpg" 
-                    alt="world-covert Logo" 
+                    src="/logo.png" 
+                    alt="world-convert Logo" 
                     fill 
                     style={{ objectFit: 'cover' }} 
+                    sizes="38px" // ✅ FIX: Ditambahkan agar Next.js tahu ukuran pasti gambar ini (38px) dan tidak komplain lagi
                     priority 
                   />
                 </div>
                 <span style={styles.logoText}>
-                  WorldCair
+                  World-convert
                 </span>
               </div>
               
