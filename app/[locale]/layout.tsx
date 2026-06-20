@@ -206,7 +206,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
               <div style={styles.rightNav}>
                 
                 {/* 🚀 TOMBOL CUSTOMER SERVICE MENYESUAIKAN BAHASA */}
-                <Link href="/" style={styles.csButton}>
+                <Link href="/cs" style={styles.csButton}>
                   {csLabels[locale] || csLabels['en']}
                 </Link>
 
