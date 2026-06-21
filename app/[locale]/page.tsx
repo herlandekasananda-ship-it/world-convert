@@ -13,7 +13,7 @@ export default function HomePage({ params }: Props) {
   // Unwrapping params secara asinkron di Server Component
   const { locale } = use(params);
   
-  // Mengambil database langsung di server side (Aman dari Eror Chunk!)
+  // Mengambil database langsung di server side
   const db = use(getDatabase());
   const dataHalaman = db.data.konten.find(
     (item: KontenData) => item.page === 'home' && item.locale === locale
@@ -96,7 +96,8 @@ export default function HomePage({ params }: Props) {
   ];
 
   return (
-    <>
+    <div className="hp-root">
+      {/* CSS diletakkan di dalam container utama agar hidrasi HTML berjalan valid */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root {
           --clr-bg:          #F8FAFC;
@@ -427,144 +428,141 @@ export default function HomePage({ params }: Props) {
         }
       `}} />
 
-      <div className="hp-root">
-        {/* ── 1. HERO SECTION ── */}
-        <section className="hp-hero-wrap">
-          <div className="hp-container">
-            <div className="hp-hero-inner">
+      {/* ── 1. HERO SECTION ── */}
+      <section className="hp-hero-wrap">
+        <div className="hp-container">
+          <div className="hp-hero-inner">
 
-              <div className="hp-hero-left">
-                <div className="hp-badge">
-                  <span className="hp-badge-dot" aria-hidden="true" />
-                  {getLabel('badge')}
-                </div>
-
-                <h1 className="hp-headline">
-                  <span className="hp-headline-accent">Worldcoin</span>{' '}
-                  {dataHalaman?.title
-                    ? dataHalaman.title.replace(/worldcoin/i, '').trim()
-                    : 'Cash Out'}
-                </h1>
-
-                <p className="hp-body">
-                  {dataHalaman?.content || 'Loading Content...'}
-                </p>
-
-                <div className="hp-cta-row">
-                  <Link href="/tarik-worldcoin-ke-cash" className="hp-btn-primary">
-                    {getLabel('btnCair')}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </Link>
-                  <button className="hp-btn-secondary">
-                    {getLabel('btnRate')}
-                  </button>
-                </div>
+            <div className="hp-hero-left">
+              <div className="hp-badge">
+                <span className="hp-badge-dot" aria-hidden="true" />
+                {getLabel('badge')}
               </div>
 
-              {/* Memanggil Komponen Client Koin */}
-              <InteractiveCoin />
+              <h1 className="hp-headline">
+                <span className="hp-headline-accent">Worldcoin</span>{' '}
+                {dataHalaman?.title
+                  ? dataHalaman.title.replace(/worldcoin/i, '').trim()
+                  : 'Cash Out'}
+              </h1>
 
+              <p className="hp-body">
+                {dataHalaman?.content || 'Loading Content...'}
+              </p>
+
+              <div className="hp-cta-row">
+                <Link href="/tarik-worldcoin-ke-cash" className="hp-btn-primary">
+                  {getLabel('btnCair')}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </Link>
+                <button className="hp-btn-secondary">
+                  {getLabel('btnRate')}
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
 
-        {/* ── 2. TRUST METRICS SECTION ── */}
-        <div className="hp-metrics-wrap">
-          <div className="hp-container">
-            <div className="hp-metrics-grid">
-              <div className="hp-metric-card">
-                <div className="hp-metric-value">$2.5M+</div>
-                <div className="hp-metric-label">{getLabel('metric1')}</div>
-              </div>
-              <div className="hp-metric-card">
-                <div className="hp-metric-value">&lt;5 Min</div>
-                <div className="hp-metric-label">{getLabel('metric2')}</div>
-              </div>
-              <div className="hp-metric-card">
-                <div className="hp-metric-value">15K+</div>
-                <div className="hp-metric-label">{getLabel('metric3')}</div>
-              </div>
+            {/* Memanggil Komponen Client Koin */}
+            <InteractiveCoin />
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── 2. TRUST METRICS SECTION ── */}
+      <div className="hp-metrics-wrap">
+        <div className="hp-container">
+          <div className="hp-metrics-grid">
+            <div className="hp-metric-card">
+              <div className="hp-metric-value">$2.5M+</div>
+              <div className="hp-metric-label">{getLabel('metric1')}</div>
+            </div>
+            <div className="hp-metric-card">
+              <div className="hp-metric-value">&lt;5 Min</div>
+              <div className="hp-metric-label">{getLabel('metric2')}</div>
+            </div>
+            <div className="hp-metric-card">
+              <div className="hp-metric-value">15K+</div>
+              <div className="hp-metric-label">{getLabel('metric3')}</div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* ── 3. GLOBAL REACH SECTION ── */}
-        <section className="hp-flags-wrap">
-          <div className="hp-container">
-            <div className="hp-section-eyebrow">
-              <span className="hp-section-label">Global Reach</span>
-              <h2 className="hp-section-title">{getLabel('flagTitle')}</h2>
-              <p className="hp-section-sub">{getLabel('flagSub')}</p>
-            </div>
+      {/* ── 3. GLOBAL REACH SECTION ── */}
+      <section className="hp-flags-wrap">
+        <div className="hp-container">
+          <div className="hp-section-eyebrow">
+            <span className="hp-section-label">Global Reach</span>
+            <h2 className="hp-section-title">{getLabel('flagTitle')}</h2>
+            <p className="hp-section-sub">{getLabel('flagSub')}</p>
+          </div>
 
-            <div className="hp-flags-grid">
-              {globalFlags.map((flag) => (
-                <div key={flag.code} className="hp-flag-chip">
-                  <div className="hp-flag-img-wrap">
+          <div className="hp-flags-grid">
+            {globalFlags.map((flag) => (
+              <div key={flag.code} className="hp-flag-chip">
+                <div className="hp-flag-img-wrap">
+                  <Image
+                    src={`https://flagcdn.com/w40/${flag.code}.png`}
+                    alt={`Flag of ${flag.name}`}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="20px"
+                  />
+                </div>
+                <span className="hp-flag-name">{flag.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. TESTIMONIALS SECTION ── */}
+      <section className="hp-comments-wrap">
+        <div className="hp-container">
+          <div className="hp-section-eyebrow">
+            <span className="hp-section-label">Testimonials</span>
+            <h2 className="hp-section-title">{getLabel('commentTitle')}</h2>
+            <p className="hp-section-sub">{getLabel('commentSub')}</p>
+          </div>
+
+          <div className="hp-comments-grid">
+            {dummyComments.map((comment) => (
+              <article key={comment.id} className="hp-comment-card">
+                <div className="hp-comment-header">
+                  <div className="hp-comment-avatar" aria-hidden="true">
+                    {comment.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="hp-comment-info">
+                    <div className="hp-comment-name">{comment.name}</div>
+                    <div className="hp-comment-role">{comment.role}</div>
+                  </div>
+                  <div className="hp-comment-flag-wrap">
                     <Image
-                      src={`https://flagcdn.com/w40/${flag.code}.png`}
-                      alt={`Flag of ${flag.name}`}
+                      src={`https://flagcdn.com/w20/${comment.country.toLowerCase()}.png`}
+                      alt={`Flag`}
                       fill
-                      style={{ objectFit: 'cover' }}
                       sizes="20px"
+                      style={{ objectFit: 'cover' }}
                     />
                   </div>
-                  <span className="hp-flag-name">{flag.name}</span>
                 </div>
-              ))}
-            </div>
+
+                <div className="hp-stars" aria-label={`${comment.rating} out of 5 stars`}>
+                  {Array.from({ length: comment.rating }, (_, i) => (
+                    <span key={i} className="hp-star" aria-hidden="true">★</span>
+                  ))}
+                </div>
+
+                <p className="hp-comment-text">
+                  &ldquo;{comment.text}&rdquo;
+                </p>
+              </article>
+            ))}
           </div>
-        </section>
-
-        {/* ── 4. TESTIMONIALS SECTION ── */}
-        <section className="hp-comments-wrap">
-          <div className="hp-container">
-            <div className="hp-section-eyebrow">
-              <span className="hp-section-label">Testimonials</span>
-              <h2 className="hp-section-title">{getLabel('commentTitle')}</h2>
-              <p className="hp-section-sub">{getLabel('commentSub')}</p>
-            </div>
-
-            <div className="hp-comments-grid">
-              {dummyComments.map((comment) => (
-                <article key={comment.id} className="hp-comment-card">
-                  <div className="hp-comment-header">
-                    <div className="hp-comment-avatar" aria-hidden="true">
-                      {comment.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
-                    </div>
-                    <div className="hp-comment-info">
-                      <div className="hp-comment-name">{comment.name}</div>
-                      <div className="hp-comment-role">{comment.role}</div>
-                    </div>
-                    <div className="hp-comment-flag-wrap">
-                      <Image
-                        src={`https://flagcdn.com/w20/${comment.country.toLowerCase()}.png`}
-                        alt={`Flag`}
-                        fill
-                        sizes="20px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="hp-stars" aria-label={`${comment.rating} out of 5 stars`}>
-                    {Array.from({ length: comment.rating }, (_, i) => (
-                      <span key={i} className="hp-star" aria-hidden="true">★</span>
-                    ))}
-                  </div>
-
-                  <p className="hp-comment-text">
-                    &ldquo;{comment.text}&rdquo;
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </>
+        </div>
+      </section>
+    </div>
   );
 }
