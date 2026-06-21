@@ -117,9 +117,7 @@ export default function PencairanPage({ params }: Props) {
   const paymentOptions = getPaymentOptions();
   const selectedOption = paymentOptions.find(opt => opt.value === metodeBayar);
 
-  // 🚀 LOGIKA STRATEGIS: POLA DINAMIS SESUAI METODE PEMBAYARAN DAN NEGARA
   const getInputConfiguration = () => {
-    // Default Fallback
     const config = {
       bankLabel: "Bank / Platform Name",
       bankPlaceholder: "e.g., Bank Name or Wallet Type",
@@ -188,7 +186,6 @@ export default function PencairanPage({ params }: Props) {
       }
     }
     else {
-      // Global English Fallbacks
       if (metodeBayar.includes('crypto')) {
         config.bankLabel = "Blockchain Network";
         config.bankPlaceholder = "e.g., Polygon, Arbitrum";
@@ -230,7 +227,8 @@ export default function PencairanPage({ params }: Props) {
     };
 
     fetchMarketPrice();
-    const marketInterval = setInterval(fetchMarketPrice, 10000);
+    // HEMAT DATA: Mengubah interval reload dari 10 detik ke 60 detik (1 menit)
+    const marketInterval = setInterval(fetchMarketPrice, 60000);
 
     return () => {
       controller.abort();
@@ -464,7 +462,7 @@ export default function PencairanPage({ params }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* 🚀 FIELD 2: 3 KOLOM INPUT DINAMIS MENGIKUTI METODE & NEGARA */}
+        {/* FIELD 2: 3 KOLOM INPUT DINAMIS */}
         <AnimatePresence initial={false}>
           {metodeBayar !== "" && (
             <motion.div 
@@ -474,7 +472,6 @@ export default function PencairanPage({ params }: Props) {
               transition={{ duration: 0.2 }} 
               style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '1rem' }}
             >
-              {/* Kolom A: Nama Bank / Platform (Dinamis) */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
                   <LuCreditCard size={14} style={{ color: '#2563eb' }} />
@@ -490,7 +487,6 @@ export default function PencairanPage({ params }: Props) {
                 />
               </div>
 
-              {/* Kolom B: Nama Pemilik Akun (Dinamis) */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
                   <LuUser size={14} style={{ color: '#2563eb' }} />
@@ -506,7 +502,6 @@ export default function PencairanPage({ params }: Props) {
                 />
               </div>
 
-              {/* Kolom C: Nomor Rekening / HP / Address (Dinamis) */}
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
                   <LuSmartphone size={14} style={{ color: '#2563eb' }} />
