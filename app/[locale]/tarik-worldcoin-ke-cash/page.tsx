@@ -5,7 +5,7 @@ import { useEffect, useState, use, useRef } from 'react';
 import { Link } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image'; 
-import { fetchWldPrices } from '@/utils/binance'; 
+import { fetchWldPrices } from '@/utils/prices'; 
 
 import { 
   LuArrowLeft, 
@@ -219,6 +219,7 @@ export default function PencairanPage({ params }: Props) {
         setWldLocalPrice(prices.priceInLocal);
         setIsLoadingPrice(false);
       } catch (error) {
+        // Mencegah error pembatalan 'AbortError' merusak/mengubah state ke harga fallback
         if (error instanceof Error && error.name !== 'AbortError') {
           setWldLocalPrice(currency.fallbackPrice);
           setIsLoadingPrice(false);
@@ -227,7 +228,6 @@ export default function PencairanPage({ params }: Props) {
     };
 
     fetchMarketPrice();
-    // HEMAT DATA: Mengubah interval reload dari 10 detik ke 60 detik (1 menit)
     const marketInterval = setInterval(fetchMarketPrice, 60000);
 
     return () => {
@@ -311,10 +311,10 @@ export default function PencairanPage({ params }: Props) {
     { id: 1, title: { id: "Langkah 1: Salin Username Agen", en: "Step 1: Copy Agent Username", es: "Paso 1: Copiar Usuario del Agente", tl: "Hakbang 1: Kopyahin ang Username" }, desc: { id: "Salin nama username World App tujuan transfer agen kami yang tertera di bawah ini.", en: "Copy our agent's World App target username listed below.", es: "Copie el nombre de usuario de World App de nuestro agente a continuación.", tl: "Kopyahin ang World App username ng aming ahente sa ibaba." } },
     { id: 2, title: { id: "Langkah 2: Buka World App", en: "Step 2: Open World App", es: "Paso 2: Abrir World App", tl: "Hakbang 2: Buksan ang World App" }, desc: { id: "Buka aplikasi World App resmi di HP Anda.", en: "Open the official World App on your phone.", es: "Abra la aplicación oficial World App en su teléfono.", tl: "Buksan ang opisyal na World App sa iyong telepono." } },
     { id: 3, title: { id: "Langkah 3: Masuk ke Menu Dompet", en: "Step 3: Go to Wallet Menu", es: "Paso 3: Ir al Menú de Billetera", tl: "Hakbang 3: Pumunta sa Wallet Menu" }, desc: { id: "Ketuk ikon dompet atau saldo koin WLD Anda pada halaman utama aplikasi.", en: "Tap the wallet icon or your WLD coin balance.", es: "Toque el icono de la billetera o su saldo de WLD.", tl: "I-tap ang wallet icon o ang iyong balanse ng WLD." } },
-    { id: 4, title: { id: "Langkah 4: Pilih Tombol Kirim", en: "Step 4: Select Send Button", es: "Paso 4: Seleccionar Enviar", tl: "Hakbang 4: Pilihin ang Send Button" }, desc: { id: "Pilih opsi 'Kirim' atau 'Send' untuk memulai pemindahan koin WLD Anda.", en: "Select the 'Send' option to initiate your WLD coin transfer.", es: "Seleccione la opción 'Enviar' para iniciar la transferencia de WLD.", tl: "Pilihin ang 'Send' na opsyon para simulan ang pag-transfer ng WLD." } },
+    { id: 4, title: { id: "Langkah 4: Pilih Tombol Kirim", en: "Step 4: Select Send Button", es: "Paso 4: Seleccionar Enviar", tl: "Hakbang 4: Pilihin ang Send Button" }, desc: { id: "Pilih opsi 'Kirim' atau 'Send' untuk memulai pemindahan koin WLD Anda.", en: "Select the 'Send' option to initiate your WLD coin transfer.", es: "Seleccione la option 'Enviar' para iniciar la transferencia de WLD.", tl: "Pilihin ang 'Send' na opsyon para simulan ang pag-transfer ng WLD." } },
     { id: 5, title: { id: "Langkah 5: Tempel Username Tujuan", en: "Step 5: Paste Target Username", es: "Paso 5: Pegar Usuario Destino", tl: "Hakbang 5: I-paste ang Username" }, desc: { id: "Tempelkan (Paste) nama username koin yang sudah disalin tadi ke dalam kolom pencarian penerima.", en: "Paste the copied username into the recipient search bar.", es: "Pegue el nombre de usuario copiado en la barra de búsqueda de destinatarios.", tl: "I-paste ang kinopyang username sa search bar ng tatanggap." } },
     { id: 6, title: { id: "Langkah 6: Masukkan Jumlah WLD", en: "Step 6: Enter WLD Amount", es: "Paso 6: Ingresar Cantidad WLD", tl: "Hakbang 6: Ilagay ang Halaga ng WLD" }, desc: { id: "Masukkan jumlah koin WLD yang ingin dicairkan sesuai dengan nominal yang Anda input di website ini.", en: "Enter the amount of WLD coins to cash out, matching your input on this website.", es: "Ingrese la cantidad de WLD a retirar, coincidiendo con lo ingresado en este sitio web.", tl: "Ilagay ang halaga ng WLD na nais i-cash out, na tumutugma sa inilagay mo sa website na ito." } },
-    { id: 7, title: { id: "Langkah 7: Konfirmasi Pengiriman", en: "Step 7: Confirm Shipment", es: "Paso 7: Confirmar Envío", tl: "Hakbang 7: Kumpirmahin ang Pagpapadala" }, desc: { id: "Periksa kembali nominal transfer, lalu lakukan konfirmasi pengiriman hingga transaksi sukses.", en: "Double-check the transfer amount, then confirm the transfer until it succeeds.", es: "Verifique el monto de la transferencia, luego confirme el envío hasta que sea exitoso.", tl: "Suriin muli ang halaga ng transfer, pagkatapos ay kumpirmahin ang pagpapadala hanggang sa magtapumay." } },
+    { id: 7, title: { id: "Langkah 7: Konfirmasi Pengiriman", en: "Step 7: Confirm Shipment", es: "Paso 7: Confirmar Envío", tl: "Hakbang 7: Kumpirmahin ang Pagpapadala" }, desc: { id: "Periksa kembali nominal transfer, lalu lakukan konfirmasi pengiriman hingga transaksi sukses.", en: "Double-check the transfer amount, then confirm the transfer until it succeeds.", es: "Verifique el monto de la transferencia, luego confirme el envío hasta que sea exitoso.", tl: "Suriin muli ang halaga ng transfer, pagkatapos ay kumpirmahin ang pagpapadala hanggang sa magtagumpay." } },
     { id: 8, title: { id: "Langkah 8: Selesaikan Transaksi", en: "Step 8: Complete Transaction", es: "Paso 8: Completar Transacción", tl: "Hakbang 8: Tapusin ang Transaksyon" }, desc: { id: "Jika transfer sudah berhasil, klik tombol di bawah untuk instruksi otomatis pencairan uang ke rekening lokal Anda.", en: "If the transfer is successful, click the button below to initiate automatic fund withdrawal to your local bank.", es: "Si la transferencia fue exitosa, haga clic abajo para iniciar el retiro automático a su banco.", tl: "Kung matagumpay ang transfer, i-click ang button sa ibaba upang simulan ang awtomatikong pagpapadala sa iyong bank account." } }
   ];
 
@@ -405,7 +405,7 @@ export default function PencairanPage({ params }: Props) {
           </div>
         </div>
         <div style={{ borderLeft: '1px solid #f1f5f9', paddingLeft: '1rem', textAlign: 'right' }}>
-          <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Binance Global</span>
+          <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Bybit Global</span>
           <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#334155', marginTop: '0.1rem' }}>
             {isLoadingPrice ? '...' : `$${wldPriceUSD.toFixed(2)}`}
           </div>
