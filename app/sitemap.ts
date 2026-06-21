@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ⚠️ GANTI dengan domain asli platform Anda saat naik production
-  const baseUrl = 'https://world-convert.com'; 
+  const baseUrl = 'https://world-convert.vercel.app'; 
   
   // 4 Negara target utama Anda
   const locales = ['id', 'es', 'tl', 'en'];
