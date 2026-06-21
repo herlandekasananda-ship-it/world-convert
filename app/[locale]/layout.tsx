@@ -2,7 +2,6 @@
 // app/[locale]/layout.tsx
 import { ReactNode } from 'react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
-import Image from 'next/image';
 import { NextIntlClientProvider } from 'next-intl'; 
 import { getMessages } from 'next-intl/server';
 import { Inter } from 'next/font/google'; // 🚀 PENGOPTIMALAN FONT UNTUK SEO
@@ -188,14 +187,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
               {/* Logo & Brand Identity */}
               <div style={styles.logoWrapper}>
                 <div style={styles.logoImageContainer}>
-                  <Image 
-                    src="/logo.png" 
-                    alt="world-convert Logo" 
-                    fill 
-                    style={{ objectFit: 'cover' }} 
-                    sizes="38px" 
-                    priority 
-                  />
+                  
                 </div>
                 <span style={styles.logoText}>
                   World-convert

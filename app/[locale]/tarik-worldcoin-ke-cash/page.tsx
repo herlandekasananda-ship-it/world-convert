@@ -5,6 +5,7 @@ import { useEffect, useState, use, useRef } from 'react';
 import { Link } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image'; 
+import { fetchWldPrices } from '@/utils/binance'; // 🚀 IMPORT API BINANCE YANG SUDAH DIPISAH
 
 // Import React Icons standar Lu
 import { 
@@ -35,11 +36,11 @@ interface CustomAlert {
   message: string;
 }
 
+// 🎯 PERBAIKAN: Interface bersih tanpa logoUrl
 interface PaymentOption {
   value: string;
   label: string;
   brandName: string; 
-  logoUrl: string; 
 }
 
 export default function PencairanPage({ params }: Props) {
@@ -87,29 +88,30 @@ export default function PencairanPage({ params }: Props) {
 
   const currency = getCurrencyConfig();
 
+  // 🎯 PERBAIKAN: Seluruh daftar opsi pembayaran bersih tanpa logoUrl
   const getPaymentOptions = (): PaymentOption[] => {
     switch (locale) {
       case 'id':
         return [
-          { value: 'dana_gopay', brandName: 'DANA / E-Wallet', label: 'DANA, OVO, GoPay, LinkAja', logoUrl: '/logos/dana.png' },
-          { value: 'bank_transfer', brandName: 'Transfer Bank', label: 'BCA, Mandiri, BRI, BNI, dll', logoUrl: '/logos/idbank.png' }
+          { value: 'dana_gopay', brandName: 'DANA / E-Wallet', label: 'DANA, OVO, GoPay, LinkAja' },
+          { value: 'bank_transfer', brandName: 'Transfer Bank', label: 'BCA, Mandiri, BRI, BNI, dll' }
         ];
       case 'es':
         return [
-          { value: 'sepa_revolut', brandName: 'SEPA / Revolut', label: 'SEPA Bank Transfer / Revolut', logoUrl: '/logos/revolut.png' },
-          { value: 'paypal', brandName: 'PayPal', label: 'PayPal International', logoUrl: '/logos/paypal.png' },
-          { value: 'crypto', brandName: 'Crypto Wallet', label: 'USDT / USDC (Polygon/Arbitrum)', logoUrl: '/logos/crypto.png' }
+          { value: 'sepa_revolut', brandName: 'SEPA / Revolut', label: 'SEPA Bank Transfer / Revolut' },
+          { value: 'paypal', brandName: 'PayPal', label: 'PayPal International' },
+          { value: 'crypto', brandName: 'Crypto Wallet', label: 'USDT / USDC (Polygon/Arbitrum)' }
         ];
       case 'tl':
         return [
-          { value: 'gcash', brandName: 'GCash / Maya', label: 'GCash / Maya E-Wallet', logoUrl: '/logos/gcash.png' },
-          { value: 'ph_bank', brandName: 'Local Bank', label: 'BDO / BPI / Metrobank', logoUrl: '/logos/localbank.png' }
+          { value: 'gcash', brandName: 'GCash / Maya', label: 'GCash / Maya E-Wallet' },
+          { value: 'ph_bank', brandName: 'Local Bank', label: 'BDO / BPI / Metrobank' }
         ];
       default:
         return [
-          { value: 'paypal_stripe', brandName: 'PayPal / Stripe', label: 'PayPal or Stripe Transfer', logoUrl: '/logos/paypal.png' },
-          { value: 'swift', brandName: 'SWIFT Wire', label: 'International Bank Wire', logoUrl: '/logos/bank.png' },
-          { value: 'crypto_cashout', brandName: 'Crypto (USDT)', label: 'Crypto Wallet Cashout', logoUrl: '/logos/crypto.png' }
+          { value: 'paypal_stripe', brandName: 'PayPal / Stripe', label: 'PayPal or Stripe Transfer' },
+          { value: 'swift', brandName: 'SWIFT Wire', label: 'International Bank Wire' },
+          { value: 'crypto_cashout', brandName: 'Crypto (USDT)', label: 'Crypto Wallet Cashout' }
         ];
     }
   };
@@ -122,41 +124,23 @@ export default function PencairanPage({ params }: Props) {
     setTimeout(() => setAlertState(prev => ({ ...prev, show: false })), 4000);
   };
 
+  // 🚀 PERBAIKAN: Menggunakan utilitas API eksternal yang di-polling berkala
   useEffect(() => {
     const controller = new AbortController();
     
     const fetchMarketPrice = async () => {
       if (document.hidden) return; 
       try {
-        const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=WLDUSDT', { 
-          cache: 'no-store',
-          signal: controller.signal 
-        });
-        const marketData = await res.json();
-        
-        if (marketData?.price) {
-          const priceInUSD = parseFloat(marketData.price);
-          setWldPriceUSD(priceInUSD);
-          
-          if (currency.code === 'USD') {
-            setWldLocalPrice(priceInUSD);
-            setIsLoadingPrice(false);
-            return;
-          }
-          
-          const fiatRes = await fetch('https://open.er-api.com/v6/latest/USD', { signal: controller.signal });
-          const fiatData = await fiatRes.json();
-          const targetRate = fiatData.rates?.[currency.code];
-          
-          if (targetRate) {
-            setWldLocalPrice(priceInUSD * targetRate);
-            setIsLoadingPrice(false);
-            return;
-          }
-        }
+        const prices = await fetchWldPrices(currency.code, controller.signal);
+        setWldPriceUSD(prices.priceInUSD);
+        setWldLocalPrice(prices.priceInLocal);
+        setIsLoadingPrice(false);
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
-          console.warn("Gagal fetch data live:", error.message);
+          console.warn("Gagal fetch data live via utils:", error.message);
+          // Fallback darurat jika API bermasalah
+          setWldLocalPrice(currency.fallbackPrice);
+          setIsLoadingPrice(false);
         }
       }
     };
@@ -306,7 +290,7 @@ export default function PencairanPage({ params }: Props) {
         </p>
       </div>
 
-      {/* 🖼️ BANNER ANIMASI NEGARA GLOBAL */}
+      {/* BANNER ANIMASI NEGARA GLOBAL */}
       <div style={{ position: 'relative', width: '100%', height: '110px', borderRadius: '16px', overflow: 'hidden', marginBottom: '1rem', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', padding: '0 1.25rem', boxSizing: 'border-box', border: '1px solid #1e293b' }}>
         <motion.div 
           animate={{ rotate: 360 }}
@@ -333,7 +317,7 @@ export default function PencairanPage({ params }: Props) {
         </div>
       </div>
 
-      {/* 🚀 TATA LETAK BARU: LIVE RATE CARD MINIMALIS & ELEGAN (Tanpa Kotak Hitam) */}
+      {/* LIVE RATE CARD */}
       <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
         <div>
           <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#2563eb', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
@@ -358,7 +342,7 @@ export default function PencairanPage({ params }: Props) {
       {/* Form Utama Modern */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '1.25rem', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
         
-        {/* FIELD 1: CUSTOM BRANDED METHOD SELECTOR */}
+        {/* FIELD 1: CUSTOM METHOD SELECTOR (CLEAN TANPA LOGOURL) */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
             <LuWallet size={15} style={{ color: '#2563eb' }} />
@@ -371,9 +355,7 @@ export default function PencairanPage({ params }: Props) {
           >
             {selectedOption ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ position: 'relative', width: '22px', height: '22px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
-                  <Image src={selectedOption.logoUrl} alt={selectedOption.brandName} fill sizes="22px" style={{ objectFit: 'contain' }} />
-                </div>
+                {/* 🎯 PERBAIKAN: Komponen Image logoUrl dihapus */}
                 <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedOption.brandName}</span>
               </div>
             ) : (
@@ -403,9 +385,7 @@ export default function PencairanPage({ params }: Props) {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : '#f8fafc')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : 'transparent')}
                   >
-                    <div style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, backgroundColor: '#f8fafc', border: '1px solid #f1f5f9', padding: '2px' }}>
-                      <Image src={option.logoUrl} alt={option.brandName} fill sizes="28px" style={{ objectFit: 'contain' }} />
-                    </div>
+                    {/* 🎯 PERBAIKAN: Komponen Image logoUrl di dalam list juga dihapus */}
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0f172a' }}>{option.brandName}</span>
                       <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{option.label}</span>
