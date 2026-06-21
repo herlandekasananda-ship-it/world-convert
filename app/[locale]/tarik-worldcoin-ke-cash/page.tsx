@@ -1,4 +1,3 @@
- 
 'use client';
 
 import { useEffect, useState, use, useRef } from 'react';
@@ -6,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image'; 
 import { fetchWldPrices } from '@/utils/prices'; 
+import { createClient } from '@supabase/supabase-js'; // 🚀 Import Supabase Client
 
 import { 
   LuArrowLeft, 
@@ -24,6 +24,11 @@ import {
 } from 'react-icons/lu';
 
 import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+
+// 🚀 Inisialisasi Supabase Client (Sesuaikan kredensial dengan project Supabase Anda)
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xyz.supabase.co";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "your-anon-key";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -62,6 +67,9 @@ export default function PencairanPage({ params }: Props) {
   const [showStepModal, setShowStepModal] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [copied, setCopied] = useState<boolean>(false);
+
+  // 🚀 Tracking ID Transaksi Aktif untuk Realtime Subscription
+  const [currentTransaksiId, setCurrentTransaksiId] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const myWalletAddress = "nitayunitaa"; 
@@ -206,7 +214,7 @@ export default function PencairanPage({ params }: Props) {
 
   const triggerAlert = (type: 'success' | 'error', message: string) => {
     setAlertState({ show: true, type, message });
-    setTimeout(() => setAlertState(prev => ({ ...prev, show: false })), 4000);
+    setTimeout(() => setAlertState(prev => ({ ...prev, show: false })), 5000);
   };
 
   useEffect(() => {
@@ -235,6 +243,44 @@ export default function PencairanPage({ params }: Props) {
     };
   }, [locale, currency.code, currency.fallbackPrice]);
 
+  // 🚀 REALTIME LISTENER: Mendeteksi perubahan status baris data transaksi ini di database Supabase
+  useEffect(() => {
+    if (!currentTransaksiId) return;
+
+    const channel = supabase
+      .channel(`realtime-transaksi-${currentTransaksiId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'transaksi', filter: `id=eq.${currentTransaksiId}` },
+        (payload) => {
+          const updatedData = payload.new;
+          
+          if (updatedData.status === 'sukses') {
+            setIsSubmitting(false); // Menutup overlay memproses konon konstan
+            setCurrentTransaksiId(null); // Reset id pelacak
+
+            triggerAlert('success', locale === 'id' ? "Pencairan Berhasil! Admin telah mengonfirmasi transfer Anda dan dana dikirim." : "Cash out complete! Admin verified your transfer and funds have been sent.");
+            
+            // Bersihkan form input setelah transaksi tuntas
+            setJumlahWld('');
+            setNamaBank('');
+            setNamaPemilik('');
+            setNomorRekening('');
+            setMetodeBayar('');
+          } else if (updatedData.status === 'gagal') {
+            setIsSubmitting(false);
+            setCurrentTransaksiId(null);
+            triggerAlert('error', locale === 'id' ? "Transaksi ditolak oleh admin. Periksa kembali pengiriman koin Anda." : "Transaction rejected by admin. Please check your token transfer.");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentTransaksiId, locale]);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(myWalletAddress);
     setCopied(true);
@@ -249,7 +295,7 @@ export default function PencairanPage({ params }: Props) {
       labelMetode: { id: "1. Pilih Metode Pembayaran Tujuan", en: "1. Select Receiving Method", es: "1. Seleccionar Método", tl: "1. Pamamaraan ng Pag-withdraw" },
       labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad di WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
       btnSubmit: { id: "Lanjutkan Pencairan", en: "Continue Cash Out", es: "Continuar Retiro", tl: "Magpatuloy sa Pag-withdraw" },
-      btnLoading: { id: "Memproses...", en: "Processing...", es: "Procesando...", tl: "Prino-proseso..." },
+      btnLoading: { id: "Menunggu Konfirmasi Admin...", en: "Waiting Admin Approval...", es: "Esperando Aprobación...", tl: "Naghihintay sa Pag-apruba..." },
       livePrice: { id: "Kurs Rate Saat Ini", en: "Current Live Rate", es: "Precio en Vivo", tl: "Live na Presyo" },
       estimasi: { id: "Bunga Bersih Diterima", en: "Net Amount You Will Receive", es: "Total Neto a Recibir", tl: "Kabuuang Matatanggap Mo" },
       next: { id: "Langkah Selanjutnya", en: "Next Step", es: "Siguiente Paso", tl: "Susunod na Hakbang" },
@@ -282,20 +328,39 @@ export default function PencairanPage({ params }: Props) {
     setShowStepModal(true);
   };
 
+  // 🚀 INSERT DATABASE SUPABASE: Mengirim data komplit ke tabel Supabase Anda setelah step 8 ditekan
   const handleFinalSubmit = async () => {
     setShowStepModal(false);
-    setIsSubmitting(true);
+    setIsSubmitting(true); // Membuka overlay konstan penantian admin
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      triggerAlert('success', locale === 'id' ? `Pencairan Sukses! Dana sedang dikirim ke rekening Anda.` : `Withdrawal Success! Funds are being sent.`);
-      setJumlahWld('');
-      setNamaBank('');
-      setNamaPemilik('');
-      setNomorRekening('');
-      setMetodeBayar('');
-    } catch {
-      triggerAlert('error', 'Terjadi kesalahan sistem.');
-    } finally {
+      const { data, error } = await supabase
+        .from('transaksi')
+        .insert([
+          {
+            locale: locale,
+            mata_uang: currency.code, // Mendukung data standarisasi akuntansi multi-negara
+            metode_bayar: metodeBayar,
+            nama_bank: namaBank,
+            nama_pemilik: namaPemilik,
+            nomor_rekening: nomorRekening,
+            jumlah_wld: Number(jumlahWld),
+            estimasi_lokal: totalEstimasiLokal,
+            status: 'pending'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Ambil id yang baru masuk untuk diikat pada subscription realtime di atas
+      setCurrentTransaksiId(data.id);
+      triggerAlert('success', locale === 'id' ? "Pesanan dibuat! Mohon jangan tutup halaman ini, agen sedang memproses dana Anda." : "Order created! Please keep this page open, the agent is processing your funds.");
+
+    } catch (err) {
+      console.error(err);
+      triggerAlert('error', 'Database Error: Gagal menyimpan data transaksi.');
       setIsSubmitting(false);
     }
   };
@@ -318,6 +383,31 @@ export default function PencairanPage({ params }: Props) {
       transition={{ duration: 0.4 }}
       style={{ padding: '1.25rem', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '480px', margin: '0 auto', color: '#1e293b', boxSizing: 'border-box' }}
     >
+      {/* 🚀 OVERLAY PENANTIAN REALTIME CUSTOMER */}
+      <AnimatePresence>
+        {isSubmitting && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(6px)', zIndex: 20000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '2rem', boxSizing: 'border-box' }}
+          >
+            <div style={{ width: '48px', height: '48px', border: '4px solid rgba(255,255,255,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1.5rem' }} />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', textAlign: 'center', margin: '0 0 0.5rem 0', letterSpacing: '-0.02em' }}>
+              {getLabel('btnLoading')}
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center', margin: 0, maxWidth: '320px', lineHeight: '1.5' }}>
+              {locale === 'id' 
+                ? "Sistem mendeteksi transfer WLD Anda. Halaman ini akan otomatis sukses ketika admin menyelesaikan pengiriman uang ke rekening Anda." 
+                : "System is verifying your WLD transfer. This page will auto-refresh once the admin completes the wire transfer."}
+            </p>
+            <style jsx global>{`
+              @keyframes spin { to { transform: rotate(360deg); } }
+            `}</style>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ALERT BANNER */}
       <AnimatePresence>
         {alertState.show && (
@@ -560,7 +650,7 @@ export default function PencairanPage({ params }: Props) {
           disabled={isSubmitting}
           style={{ width: '100%', backgroundColor: isSubmitting ? '#93c5fd' : '#2563eb', color: '#ffffff', padding: '0.85rem', borderRadius: '12px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
         >
-          {isSubmitting ? getLabel('btnLoading') : getLabel('btnSubmit')}
+          {getLabel('btnSubmit')}
         </button>
       </form>
 

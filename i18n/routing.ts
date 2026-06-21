@@ -3,7 +3,7 @@ import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
 
 export const routing = defineRouting({
-  // 1. 🚀 PERBAIKAN: Daftarkan semua bahasa yang didukung di db.json (id, en, es, tl)
+  // 1. Daftarkan semua bahasa yang didukung di db.json (id, en, es, tl)
   locales: ['id', 'en', 'es', 'tl'],
   
   // 2. Bahasa utama jika pengunjung tidak mengetik kode bahasa di URL
@@ -18,12 +18,20 @@ export const routing = defineRouting({
       es: '/cambiar-worldcoin-a-efectivo',
       tl: '/i-cash-out-ang-worldcoin'
     },
-    // 🎯 TAMBAHKAN RUTE CS DI SINI AGAR TYPESCRIPT TIDAK EROR:
+    
     '/cs': {
       id: '/cs',
       en: '/cs',
       es: '/cs',
       tl: '/cs'
+    },
+
+    // 🚀 TAMBAHAN BARU: Daftarkan rute Admin agar valid di semua bahasa
+    '/admin': {
+      id: '/admin',
+      en: '/admin',
+      es: '/admin',
+      tl: '/admin'
     }
   }
 });
