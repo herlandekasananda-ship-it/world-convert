@@ -5,9 +5,8 @@ import { useEffect, useState, use, useRef } from 'react';
 import { Link } from '@/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image'; 
-import { fetchWldPrices } from '@/utils/binance'; // 🚀 IMPORT API BINANCE YANG SUDAH DIPISAH
+import { fetchWldPrices } from '@/utils/binance'; 
 
-// Import React Icons standar Lu
 import { 
   LuArrowLeft, 
   LuCoins, 
@@ -20,10 +19,10 @@ import {
   LuDollarSign,
   LuSmartphone,
   LuChevronDown,
-  LuGlobe
+  LuGlobe,
+  LuUser
 } from 'react-icons/lu';
 
-// Menggunakan Pack Fi (Feather Icons) khusus untuk ikon Status Alert agar bebas eror versi TS
 import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
 interface Props {
@@ -36,7 +35,6 @@ interface CustomAlert {
   message: string;
 }
 
-// 🎯 PERBAIKAN: Interface bersih tanpa logoUrl
 interface PaymentOption {
   value: string;
   label: string;
@@ -50,14 +48,16 @@ export default function PencairanPage({ params }: Props) {
   const [wldLocalPrice, setWldLocalPrice] = useState<number>(0);
   const [wldPriceUSD, setWldPriceUSD] = useState<number>(0);
   const [jumlahWld, setJumlahWld] = useState<string>('');
+  
+  // State 3 Kolom Terpisah
+  const [namaBank, setNamaBank] = useState<string>('');
+  const [namaPemilik, setNamaPemilik] = useState<string>('');
   const [nomorRekening, setNomorRekening] = useState<string>('');
+
   const [metodeBayar, setMetodeBayar] = useState<string>('');
   const [isLoadingPrice, setIsLoadingPrice] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  // State untuk Custom Dropdown Metode Pembayaran
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-
   const [alertState, setAlertState] = useState<CustomAlert>({ show: false, type: 'success', message: '' });
   const [showStepModal, setShowStepModal] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -66,7 +66,6 @@ export default function PencairanPage({ params }: Props) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const myWalletAddress = "nitayunitaa"; 
 
-  // Menutup dropdown jika pengguna menyentuh/klik area di luar dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -88,7 +87,6 @@ export default function PencairanPage({ params }: Props) {
 
   const currency = getCurrencyConfig();
 
-  // 🎯 PERBAIKAN: Seluruh daftar opsi pembayaran bersih tanpa logoUrl
   const getPaymentOptions = (): PaymentOption[] => {
     switch (locale) {
       case 'id':
@@ -119,15 +117,103 @@ export default function PencairanPage({ params }: Props) {
   const paymentOptions = getPaymentOptions();
   const selectedOption = paymentOptions.find(opt => opt.value === metodeBayar);
 
+  // 🚀 LOGIKA STRATEGIS: POLA DINAMIS SESUAI METODE PEMBAYARAN DAN NEGARA
+  const getInputConfiguration = () => {
+    // Default Fallback
+    const config = {
+      bankLabel: "Bank / Platform Name",
+      bankPlaceholder: "e.g., Bank Name or Wallet Type",
+      ownerLabel: "Account Owner Full Name",
+      ownerPlaceholder: "Enter legal full name",
+      numLabel: "Account / Identification Number",
+      numPlaceholder: "Enter card, account, or phone number"
+    };
+
+    if (locale === 'id') {
+      if (metodeBayar === 'dana_gopay') {
+        config.bankLabel = "Jenis E-Wallet";
+        config.bankPlaceholder = "Contoh: DANA, OVO, GoPay, LinkAja";
+        config.ownerLabel = "Nama Akun E-Wallet (Sesuai Aplikasi)";
+        config.ownerPlaceholder = "Contoh: Budi Santoso";
+        config.numLabel = "Nomor HP E-Wallet";
+        config.numPlaceholder = "Contoh: 081234567xxx";
+      } else if (metodeBayar === 'bank_transfer') {
+        config.bankLabel = "Nama Bank Tujuan";
+        config.bankPlaceholder = "Contoh: BCA, Mandiri, BRI, BNI";
+        config.ownerLabel = "Nama Lengkap Pemilik Rekening";
+        config.ownerPlaceholder = "Nama sesuai buku tabungan / KTP";
+        config.numLabel = "Nomor Rekening Bank";
+        config.numPlaceholder = "Masukkan angka rekening tanpa spasi";
+      }
+    } 
+    else if (locale === 'tl') {
+      if (metodeBayar === 'gcash') {
+        config.bankLabel = "Wallet Type";
+        config.bankPlaceholder = "e.g., GCash or Maya";
+        config.ownerLabel = "Registered Full Name";
+        config.ownerPlaceholder = "As registered on the app";
+        config.numLabel = "Mobile Number";
+        config.numPlaceholder = "e.g., 0917XXXXXXX";
+      } else if (metodeBayar === 'ph_bank') {
+        config.bankLabel = "Bank Name";
+        config.bankPlaceholder = "e.g., BDO, BPI, Metrobank";
+        config.ownerLabel = "Account Holder Name";
+        config.ownerPlaceholder = "Full name on bank account";
+        config.numLabel = "Bank Account Number";
+        config.numPlaceholder = "Enter account digits";
+      }
+    }
+    else if (locale === 'es') {
+      if (metodeBayar === 'sepa_revolut') {
+        config.bankLabel = "Nombre del Banco / App";
+        config.bankPlaceholder = "Ej: Revolut, BBVA, Santander";
+        config.ownerLabel = "Nombre del Titular";
+        config.ownerPlaceholder = "Nombre completo del beneficiario";
+        config.numLabel = "Número de Cuenta IBAN";
+        config.numPlaceholder = "Ej: ESXX XXXX XXXX ...";
+      } else if (metodeBayar === 'paypal') {
+        config.bankLabel = "Plataforma";
+        config.bankPlaceholder = "PayPal";
+        config.ownerLabel = "Nombre del Perfil";
+        config.ownerPlaceholder = "Nombre en PayPal";
+        config.numLabel = "Correo Electrónico de PayPal";
+        config.numPlaceholder = "ejemplo@correo.com";
+      } else if (metodeBayar === 'crypto') {
+        config.bankLabel = "Red Seleccionada (Network)";
+        config.bankPlaceholder = "Ej: Polygon, Arbitrum, Optimism";
+        config.ownerLabel = "Nombre del Destinatario (Opcional)";
+        config.ownerPlaceholder = "Nombre o alias de la billetera";
+        config.numLabel = "Dirección de Billetera (Wallet Address)";
+        config.numPlaceholder = "Pegue su dirección 0x...";
+      }
+    }
+    else {
+      // Global English Fallbacks
+      if (metodeBayar.includes('crypto')) {
+        config.bankLabel = "Blockchain Network";
+        config.bankPlaceholder = "e.g., Polygon, Arbitrum";
+        config.numLabel = "Crypto Wallet Address";
+        config.numPlaceholder = "Paste your 0x... destination address";
+      } else if (metodeBayar.includes('paypal')) {
+        config.bankLabel = "Platform";
+        config.bankPlaceholder = "PayPal / Stripe";
+        config.numLabel = "Account Email Address";
+        config.numPlaceholder = "user@example.com";
+      }
+    }
+
+    return config;
+  };
+
+  const dynamicInput = getInputConfiguration();
+
   const triggerAlert = (type: 'success' | 'error', message: string) => {
     setAlertState({ show: true, type, message });
     setTimeout(() => setAlertState(prev => ({ ...prev, show: false })), 4000);
   };
 
-  // 🚀 PERBAIKAN: Menggunakan utilitas API eksternal yang di-polling berkala
   useEffect(() => {
     const controller = new AbortController();
-    
     const fetchMarketPrice = async () => {
       if (document.hidden) return; 
       try {
@@ -137,8 +223,6 @@ export default function PencairanPage({ params }: Props) {
         setIsLoadingPrice(false);
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
-          console.warn("Gagal fetch data live via utils:", error.message);
-          // Fallback darurat jika API bermasalah
           setWldLocalPrice(currency.fallbackPrice);
           setIsLoadingPrice(false);
         }
@@ -155,6 +239,8 @@ export default function PencairanPage({ params }: Props) {
   }, [locale, currency.code, currency.fallbackPrice]);
 
   useEffect(() => {
+    setNamaBank('');
+    setNamaPemilik('');
     setNomorRekening('');
   }, [metodeBayar]);
 
@@ -170,44 +256,31 @@ export default function PencairanPage({ params }: Props) {
       content: { id: "Tukar koin WLD Anda menjadi mata uang lokal dengan aman dan instan.", en: "Convert your WLD coins into local currency safely and instantly.", es: "Convierta sus monedas WLD a su moneda local al instante.", tl: "I-convert ang iyong WLD koin sa lokal na pera nang mabilis." },
       btnKembali: { id: "Kembali Halaman Utama", en: "Back to Home", es: "Volver al Inicio", tl: "Bumalik sa Home" },
       labelMetode: { id: "1. Pilih Metode Pembayaran Tujuan", en: "1. Select Receiving Method", es: "1. Seleccionar Método", tl: "1. Pamamaraan ng Pag-withdraw" },
-      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad di WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
+      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad de WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
       btnSubmit: { id: "Lanjutkan Pencairan", en: "Continue Cash Out", es: "Continuar Retiro", tl: "Magpatuloy sa Pag-withdraw" },
       btnLoading: { id: "Memproses...", en: "Processing...", es: "Procesando...", tl: "Prino-proseso..." },
       livePrice: { id: "Kurs Rate Saat Ini", en: "Current Live Rate", es: "Precio en Vivo", tl: "Live na Presyo" },
-      estimasi: { id: "Bersih Diterima di Rekening Anda", en: "Net Amount You Will Receive", es: "Total Neto a Recibir", tl: "Kabuuang Matatanggap Mo" },
+      estimasi: { id: "Bunga Bersih Diterima", en: "Net Amount You Will Receive", es: "Total Neto a Recibir", tl: "Kabuuang Matatanggap Mo" },
       next: { id: "Langkah Selanjutnya", en: "Next Step", es: "Siguiente Paso", tl: "Susunod na Hakbang" },
       doneTransfer: { id: "Saya Sudah Transfer Ke Agen", en: "I Have Sent the WLD", es: "Ya He Transferido", tl: "Naka-transfer Na Ako" },
       copyBtn: { id: "Salin", en: "Copy", es: "Copiar", tl: "Kopyahin" },
       copiedBtn: { id: "Tersalin!", en: "Copied!", es: "¡Copiado!", tl: "Na-kopya na!" },
       targetWalletText: { id: "Username Tujuan (World App):", en: "Target Username (World App):", es: "Usuario de Destino (World App):", tl: "Target na Username (World App):" },
-      globalSupport: { id: "Mendukung Pencairan Lintas Negara Secara Instan", en: "Supporting Cross-Border Instant Cash Out", es: "Soporte de Retiro Instantáneo Internacional", tl: "Suportado ang Instant Cash Out sa Buong Mundo" }
+      globalSupport: { id: "Mendukung Pencairan Lintas Negara Secara Instan", en: "Supporting Cross-Border Instant Cash Out", es: "Soporte de Retiro Instantáneo Internacional", tl: "Suportado ang Instant Cash Out sa Buong Mundo" },
     };
     return dictionary[key]?.[locale] || dictionary[key]?.['en'];
   };
 
-  const getDynamicInputConfig = () => {
-    switch (metodeBayar) {
-      case 'dana_gopay': return { label: "Nomor HP E-Wallet", placeholder: "Masukkan Nomor DANA / OVO / GoPay / LinkAja" };
-      case 'bank_transfer': return { label: "Detail Rekening Bank", placeholder: "Nomor Rekening + Nama Bank + Nama Pemilik (Contoh: BCA 123456 a/n Budi)" };
-      case 'sepa_revolut': return { label: "IBAN / Revolut Tag", placeholder: "e.g., ES12 3456... or @revolut-tag" };
-      case 'paypal': return { label: "Email PayPal", placeholder: "example@email.com" };
-      case 'crypto': return { label: "Alamat Wallet Crypto", placeholder: "0x... (USDT/USDC Network Polygon/Arbitrum)" };
-      case 'gcash': return { label: "GCash / Maya Number", placeholder: "e.g., 09123456789" };
-      case 'ph_bank': return { label: "Bank Account Details", placeholder: "Bank Name + Account Number" };
-      case 'paypal_stripe': return { label: "PayPal / Stripe Email", placeholder: "payment@domain.com" };
-      case 'swift': return { label: "SWIFT/BIC & IBAN", placeholder: "SWIFT: XXXX, IBAN: XXXX" };
-      case 'crypto_cashout': return { label: "Crypto Wallet Address", placeholder: "0x... or T... (USDT/USDC)" };
-      default: return { label: "", placeholder: "" };
-    }
-  };
-
-  const dynamicInput = getDynamicInputConfig();
   const totalEstimasiLokal = Number(jumlahWld) * wldLocalPrice;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!metodeBayar) {
       triggerAlert('error', locale === 'id' ? "Silakan pilih metode pembayaran terlebih dahulu" : "Please select a payment method");
+      return;
+    }
+    if (!namaBank || !namaPemilik || !nomorRekening) {
+      triggerAlert('error', locale === 'id' ? "Silakan lengkapi semua data tujuan rekening" : "Please fill in all account details");
       return;
     }
     if (Number(jumlahWld) < 3) {
@@ -225,6 +298,8 @@ export default function PencairanPage({ params }: Props) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       triggerAlert('success', locale === 'id' ? `Pencairan Sukses! Dana sedang dikirim ke rekening Anda.` : `Withdrawal Success! Funds are being sent.`);
       setJumlahWld('');
+      setNamaBank('');
+      setNamaPemilik('');
       setNomorRekening('');
       setMetodeBayar('');
     } catch {
@@ -236,8 +311,8 @@ export default function PencairanPage({ params }: Props) {
 
   const stepsData = [
     { id: 1, title: { id: "Langkah 1: Salin Username Agen", en: "Step 1: Copy Agent Username", es: "Paso 1: Copiar Usuario del Agente", tl: "Hakbang 1: Kopyahin ang Username" }, desc: { id: "Salin nama username World App tujuan transfer agen kami yang tertera di bawah ini.", en: "Copy our agent's World App target username listed below.", es: "Copie el nombre de usuario de World App de nuestro agente a continuación.", tl: "Kopyahin ang World App username ng aming ahente sa ibaba." } },
-    { id: 2, title: { id: "Langkah 2: Buka World App", en: "Step 2: Open World App", es: "Paso 2: Abrir World App", tl: "Hakbang 2: Buksan ang World App" }, desc: { id: "Buka aplikasi World App resmi di HP Anda dan pastikan saldo WLD Anda mencukupi.", en: "Open the official World App on your phone and ensure your WLD balance is sufficient.", es: "Abra la aplicación oficial World App en su teléfono.", tl: "Buksan ang opisyal na World App sa iyong telepono." } },
-    { id: 3, title: { id: "Langkah 3: Masuk ke Menu Dompet", en: "Step 3: Go to Wallet Menu", es: "Paso 3: Ir al Menú de Billetera", tl: "Hakbang 3: Pumunta sa Wallet Menu" }, desc: { id: "Ketuk ikon dompet atau saldo koin WLD Anda pada halaman utama aplikasi.", en: "Tap the wallet icon or your WLD coin balance on the main dashboard.", es: "Toque el icono de la billetera o su saldo de WLD.", tl: "I-tap ang wallet icon o ang iyong balanse ng WLD." } },
+    { id: 2, title: { id: "Langkah 2: Buka World App", en: "Step 2: Open World App", es: "Paso 2: Abrir World App", tl: "Hakbang 2: Buksan ang World App" }, desc: { id: "Buka aplikasi World App resmi di HP Anda.", en: "Open the official World App on your phone.", es: "Abra la aplicación oficial World App en su teléfono.", tl: "Buksan ang opisyal na World App sa iyong telepono." } },
+    { id: 3, title: { id: "Langkah 3: Masuk ke Menu Dompet", en: "Step 3: Go to Wallet Menu", es: "Paso 3: Ir al Menú de Billetera", tl: "Hakbang 3: Pumunta sa Wallet Menu" }, desc: { id: "Ketuk ikon dompet atau saldo koin WLD Anda pada halaman utama aplikasi.", en: "Tap the wallet icon or your WLD coin balance.", es: "Toque el icono de la billetera o su saldo de WLD.", tl: "I-tap ang wallet icon o ang iyong balanse ng WLD." } },
     { id: 4, title: { id: "Langkah 4: Pilih Tombol Kirim", en: "Step 4: Select Send Button", es: "Paso 4: Seleccionar Enviar", tl: "Hakbang 4: Pilihin ang Send Button" }, desc: { id: "Pilih opsi 'Kirim' atau 'Send' untuk memulai pemindahan koin WLD Anda.", en: "Select the 'Send' option to initiate your WLD coin transfer.", es: "Seleccione la opción 'Enviar' para iniciar la transferencia de WLD.", tl: "Pilihin ang 'Send' na opsyon para simulan ang pag-transfer ng WLD." } },
     { id: 5, title: { id: "Langkah 5: Tempel Username Tujuan", en: "Step 5: Paste Target Username", es: "Paso 5: Pegar Usuario Destino", tl: "Hakbang 5: I-paste ang Username" }, desc: { id: "Tempelkan (Paste) nama username koin yang sudah disalin tadi ke dalam kolom pencarian penerima.", en: "Paste the copied username into the recipient search bar.", es: "Pegue el nombre de usuario copiado en la barra de búsqueda de destinatarios.", tl: "I-paste ang kinopyang username sa search bar ng tatanggap." } },
     { id: 6, title: { id: "Langkah 6: Masukkan Jumlah WLD", en: "Step 6: Enter WLD Amount", es: "Paso 6: Ingresar Cantidad WLD", tl: "Hakbang 6: Ilagay ang Halaga ng WLD" }, desc: { id: "Masukkan jumlah koin WLD yang ingin dicairkan sesuai dengan nominal yang Anda input di website ini.", en: "Enter the amount of WLD coins to cash out, matching your input on this website.", es: "Ingrese la cantidad de WLD a retirar, coincidiendo con lo ingresado en este sitio web.", tl: "Ilagay ang halaga ng WLD na nais i-cash out, na tumutugma sa inilagay mo sa website na ito." } },
@@ -252,7 +327,7 @@ export default function PencairanPage({ params }: Props) {
       transition={{ duration: 0.4 }}
       style={{ padding: '1.25rem', fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: '480px', margin: '0 auto', color: '#1e293b', boxSizing: 'border-box' }}
     >
-      {/* 🔔 CUSTOM ANIMATED ALERT BANNER */}
+      {/* ALERT BANNER */}
       <AnimatePresence>
         {alertState.show && (
           <motion.div
@@ -274,13 +349,13 @@ export default function PencairanPage({ params }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Nav Kembali */}
+      {/* Button Kembali */}
       <Link href="/" style={{ color: '#4b5563', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.5rem', backgroundColor: '#f1f5f9', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}>
         <LuArrowLeft size={14} />
         {getLabel('btnKembali')}
       </Link>
 
-      {/* Header Utama */}
+      {/* Title */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1 style={{ color: '#0f172a', fontSize: '1.6rem', fontWeight: '800', marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>
           {getLabel('title')}
@@ -290,7 +365,7 @@ export default function PencairanPage({ params }: Props) {
         </p>
       </div>
 
-      {/* BANNER ANIMASI NEGARA GLOBAL */}
+      {/* GLOBAL BANNER */}
       <div style={{ position: 'relative', width: '100%', height: '110px', borderRadius: '16px', overflow: 'hidden', marginBottom: '1rem', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', padding: '0 1.25rem', boxSizing: 'border-box', border: '1px solid #1e293b' }}>
         <motion.div 
           animate={{ rotate: 360 }}
@@ -317,7 +392,7 @@ export default function PencairanPage({ params }: Props) {
         </div>
       </div>
 
-      {/* LIVE RATE CARD */}
+      {/* LIVE RATE */}
       <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
         <div>
           <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#2563eb', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
@@ -339,10 +414,10 @@ export default function PencairanPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Form Utama Modern */}
+      {/* FORM UTAMA */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '1.25rem', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
         
-        {/* FIELD 1: CUSTOM METHOD SELECTOR (CLEAN TANPA LOGOURL) */}
+        {/* FIELD 1: DROP-DOWN METODE */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
             <LuWallet size={15} style={{ color: '#2563eb' }} />
@@ -351,15 +426,12 @@ export default function PencairanPage({ params }: Props) {
           
           <div 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', boxSizing: 'border-box', userSelect: 'none', transition: 'border-color 0.2s' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', boxSizing: 'border-box', userSelect: 'none' }}
           >
             {selectedOption ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                {/* 🎯 PERBAIKAN: Komponen Image logoUrl dihapus */}
-                <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedOption.brandName}</span>
-              </div>
+              <span style={{ fontWeight: '700', color: '#0f172a' }}>{selectedOption.brandName}</span>
             ) : (
-              <span style={{ color: '#94a3b8' }}>-- Tap untuk memilih metode --</span>
+              <span style={{ color: '#94a3b8' }}>-- Pilih Metode Pembayaran --</span>
             )}
             <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }}>
               <LuChevronDown size={16} style={{ color: '#64748b' }} />
@@ -381,15 +453,10 @@ export default function PencairanPage({ params }: Props) {
                       setMetodeBayar(option.value);
                       setIsDropdownOpen(false);
                     }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', backgroundColor: metodeBayar === option.value ? '#eff6ff' : 'transparent', transition: 'background-color 0.15s ease' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : '#f8fafc')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = metodeBayar === option.value ? '#eff6ff' : 'transparent')}
+                    style={{ display: 'flex', flexDirection: 'column', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', backgroundColor: metodeBayar === option.value ? '#eff6ff' : 'transparent' }}
                   >
-                    {/* 🎯 PERBAIKAN: Komponen Image logoUrl di dalam list juga dihapus */}
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0f172a' }}>{option.brandName}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{option.label}</span>
-                    </div>
+                    <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0f172a' }}>{option.brandName}</span>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{option.label}</span>
                   </div>
                 ))}
               </motion.div>
@@ -397,27 +464,69 @@ export default function PencairanPage({ params }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* FIELD 2: Input Rekening (Bersyarat) */}
+        {/* 🚀 FIELD 2: 3 KOLOM INPUT DINAMIS MENGIKUTI METODE & NEGARA */}
         <AnimatePresence initial={false}>
           {metodeBayar !== "" && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
-                <LuCreditCard size={15} style={{ color: '#2563eb' }} />
-                {dynamicInput.label}
-              </label>
-              <input 
-                type="text" 
-                placeholder={dynamicInput.placeholder}
-                value={nomorRekening}
-                onChange={(e) => setNomorRekening(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem', outline: 'none', transition: 'border-color 0.2s' }} 
-                required 
-              />
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }} 
+              animate={{ opacity: 1, height: 'auto' }} 
+              exit={{ opacity: 0, height: 0 }} 
+              transition={{ duration: 0.2 }} 
+              style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
+              {/* Kolom A: Nama Bank / Platform (Dinamis) */}
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
+                  <LuCreditCard size={14} style={{ color: '#2563eb' }} />
+                  {dynamicInput.bankLabel}
+                </label>
+                <input 
+                  type="text" 
+                  placeholder={dynamicInput.bankPlaceholder}
+                  value={namaBank}
+                  onChange={(e) => setNamaBank(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem', outline: 'none' }} 
+                  required 
+                />
+              </div>
+
+              {/* Kolom B: Nama Pemilik Akun (Dinamis) */}
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
+                  <LuUser size={14} style={{ color: '#2563eb' }} />
+                  {dynamicInput.ownerLabel}
+                </label>
+                <input 
+                  type="text" 
+                  placeholder={dynamicInput.ownerPlaceholder}
+                  value={namaPemilik}
+                  onChange={(e) => setNamaPemilik(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem', outline: 'none' }} 
+                  required 
+                />
+              </div>
+
+              {/* Kolom C: Nomor Rekening / HP / Address (Dinamis) */}
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#475569' }}>
+                  <LuSmartphone size={14} style={{ color: '#2563eb' }} />
+                  {dynamicInput.numLabel}
+                </label>
+                <input 
+                  type="text" 
+                  placeholder={dynamicInput.numPlaceholder}
+                  value={nomorRekening}
+                  onChange={(e) => setNomorRekening(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '0.9rem', outline: 'none' }} 
+                  required 
+                />
+              </div>
+
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* FIELD 3: Input Nominal Jumlah Coin */}
+        {/* FIELD 3: JUMLAH COIN WLD */}
         <div>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
             <LuCoins size={15} style={{ color: '#2563eb' }} />
@@ -438,16 +547,16 @@ export default function PencairanPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Kalkulator Terintegrasi Bersih */}
+        {/* ESTIMASI */}
         <AnimatePresence>
           {Number(jumlahWld) >= 3 && (
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem 1rem', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <LuDollarSign size={18} style={{ color: '#166534' }} />
               <div>
-                <span style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                <span style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: '700', textTransform: 'uppercase' }}>
                   {getLabel('estimasi')}
                 </span>
-                <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#166534', marginTop: '0.05rem', letterSpacing: '-0.02em' }}>
+                <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#166534' }}>
                   {currency.symbol}{totalEstimasiLokal.toLocaleString(currency.localeCode, { maximumFractionDigits: locale === 'id' ? 0 : 2 })}
                 </div>
               </div>
@@ -458,24 +567,23 @@ export default function PencairanPage({ params }: Props) {
         <button 
           type="submit" 
           disabled={isSubmitting}
-          style={{ width: '100%', backgroundColor: isSubmitting ? '#93c5fd' : '#2563eb', color: '#ffffff', padding: '0.85rem', borderRadius: '12px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', marginTop: '0.25rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ width: '100%', backgroundColor: isSubmitting ? '#93c5fd' : '#2563eb', color: '#ffffff', padding: '0.85rem', borderRadius: '12px', border: 'none', fontWeight: '700', fontSize: '0.95rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
         >
           {isSubmitting ? getLabel('btnLoading') : getLabel('btnSubmit')}
         </button>
       </form>
 
-      {/* POPUP MODAL LANGKAH TRANSFER WLD */}
+      {/* MODAL STEP */}
       <AnimatePresence>
         {showStepModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vw', minHeight: '100vh', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', boxSizing: 'border-box' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', boxSizing: 'border-box' }}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', position: 'relative', boxSizing: 'border-box' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#2563eb', backgroundColor: '#eff6ff', padding: '0.3rem 0.6rem', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <LuSmartphone size={12} />
+                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#2563eb', backgroundColor: '#eff6ff', padding: '0.3rem 0.6rem', borderRadius: '99px' }}>
                   Langkah {currentStep} dari 8
                 </span>
-                <button type="button" onClick={() => setShowStepModal(false)} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
+                <button type="button" onClick={() => setShowStepModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
                   <LuX size={20} />
                 </button>
               </div>
@@ -504,7 +612,6 @@ export default function PencairanPage({ params }: Props) {
                 )}
               </div>
 
-              {/* Progress Tracker Bar */}
               <div style={{ width: '100%', height: '4px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden', marginBottom: '1.25rem' }}>
                 <div style={{ width: `${(currentStep / 8) * 100}%`, height: '100%', backgroundColor: '#2563eb', transition: 'width 0.2s ease' }} />
               </div>
@@ -515,7 +622,7 @@ export default function PencairanPage({ params }: Props) {
                     {getLabel('next')}
                   </button>
                 ) : (
-                  <button type="button" onClick={handleFinalSubmit} style={{ width: '100%', backgroundColor: '#10b981', color: '#ffffff', padding: '0.7rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                  <button type="button" onClick={handleFinalSubmit} style={{ width: '100%', backgroundColor: '#10b981', color: '#ffffff', padding: '0.7rem', borderRadius: '10px', border: 'none', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
                     <FiCheckCircle size={15} />
                     {getLabel('doneTransfer')}
                   </button>
