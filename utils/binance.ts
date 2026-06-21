@@ -1,51 +1,40 @@
 /**
- * Mengambil harga live koin WLD dalam USD dan mengonversinya ke mata uang lokal
+ * Mengambil harga live koin WLD dalam USD dan mata uang lokal menggunakan CoinGecko API
  * @param currencyCode Kode mata uang target (IDR, EUR, PHP, dll)
  * @returns Object berisi harga USD dan harga lokal
  */
 export async function fetchWldPrices(currencyCode: string, signal?: AbortSignal) {
-  // 1. Ambil harga live WLD/USDT dari Binance (Tetap real-time)
-  const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=WLDUSDT', { 
-    cache: 'no-store', // Harga crypto wajib real-time
-    signal 
-  });
-  const marketData = await res.json();
+  const localCurrencyLower = currencyCode.toLowerCase();
   
-  if (!marketData?.price) {
-    throw new Error("Format data Binance tidak valid");
-  }
-
-  const priceInUSD = parseFloat(marketData.price);
-
-  if (currencyCode === 'USD') {
-    return { priceInUSD, priceInLocal: priceInUSD };
-  }
-
-  // 2. Ambil rate konversi mata uang fiat eksternal 
-  // HEMAT DATA: Gunakan cache 5 menit (300 detik) agar tidak memakan paket data setiap 10 detik!
-  const fiatRes = await fetch('https://open.er-api.com/v6/latest/USD', { 
-    next: { revalidate: 300 }, // Untuk Next.js, atau biarkan default browser cache jika di client
+  // 1. Panggil API CoinGecko simple price
+  // Mengambil harga worldcoin dalam USD dan mata uang lokal sekaligus dalam 1 kali request!
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=worldcoin&vs_currencies=usd,${localCurrencyLower}`;
+  
+  const res = await fetch(url, { 
+    // HEMAT DATA & ANTI LIMIT: CoinGecko versi gratis memiliki rate limit ketat.
+    // Menggunakan cache 60 detik sangat disarankan agar tidak terkena Error 429 (Too Many Requests).
+    next: { revalidate: 60 }, 
     signal 
   });
-  const fiatData = await fiatRes.json();
-  let targetRate = fiatData.rates?.[currencyCode];
-
-  if (!targetRate) {
-    throw new Error(`Rate untuk mata uang ${currencyCode} tidak ditemukan`);
+  
+  if (!res.ok) {
+    throw new Error(`Gagal mengambil data dari CoinGecko (Status: ${res.status})`);
   }
 
-  // 3. PENYESUAIAN AKURASI HARGA CRYPTO (CRYPTO PREMIUM)
-  // Menambahkan penyesuaian nilai tukar agar sesuai dengan harga USDT/fiat di pasar P2P lokal
-  if (currencyCode === 'IDR') {
-    // Kurs P2P Rupiah biasanya berjarak ~1.5% sampai 2% lebih tinggi dari kurs bank internasional
-    targetRate = targetRate * 1.018; 
-  } else if (currencyCode === 'PHP') {
-    // Kurs P2P Peso Filipina (GCash) biasanya berjarak ~1.2% lebih tinggi
-    targetRate = targetRate * 1.012;
+  const data = await res.json();
+  const wldData = data?.worldcoin;
+
+  if (!wldData || typeof wldData.usd === 'undefined') {
+    throw new Error("Format data CoinGecko tidak valid");
   }
+
+  const priceInUSD = wldData.usd;
+  
+  // Jika mata uang lokal tidak ditemukan di response CoinGecko, gunakan fallback USD
+  const priceInLocal = wldData[localCurrencyLower] ?? priceInUSD;
 
   return {
     priceInUSD,
-    priceInLocal: priceInUSD * targetRate
+    priceInLocal
   };
 }
