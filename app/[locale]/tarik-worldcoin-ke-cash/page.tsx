@@ -219,7 +219,6 @@ export default function PencairanPage({ params }: Props) {
         setWldLocalPrice(prices.priceInLocal);
         setIsLoadingPrice(false);
       } catch (error) {
-        // Mencegah error pembatalan 'AbortError' merusak/mengubah state ke harga fallback
         if (error instanceof Error && error.name !== 'AbortError') {
           setWldLocalPrice(currency.fallbackPrice);
           setIsLoadingPrice(false);
@@ -254,7 +253,7 @@ export default function PencairanPage({ params }: Props) {
       content: { id: "Tukar koin WLD Anda menjadi mata uang lokal dengan aman dan instan.", en: "Convert your WLD coins into local currency safely and instantly.", es: "Convierta sus monedas WLD a su moneda local al instante.", tl: "I-convert ang iyong WLD koin sa lokal na pera nang mabilis." },
       btnKembali: { id: "Kembali Halaman Utama", en: "Back to Home", es: "Volver al Inicio", tl: "Bumalik sa Home" },
       labelMetode: { id: "1. Pilih Metode Pembayaran Tujuan", en: "1. Select Receiving Method", es: "1. Seleccionar Método", tl: "1. Pamamaraan ng Pag-withdraw" },
-      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad de WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
+      labelJumlah: { id: "2. Jumlah WLD yang Ingin Dijual", en: "2. Amount of WLD to Sell", es: "2. Cantidad di WLD a Vender", tl: "2. Halaga ng WLD na Ibe-benta" },
       btnSubmit: { id: "Lanjutkan Pencairan", en: "Continue Cash Out", es: "Continuar Retiro", tl: "Magpatuloy sa Pag-withdraw" },
       btnLoading: { id: "Memproses...", en: "Processing...", es: "Procesando...", tl: "Prino-proseso..." },
       livePrice: { id: "Kurs Rate Saat Ini", en: "Current Live Rate", es: "Precio en Vivo", tl: "Live na Presyo" },
@@ -405,7 +404,8 @@ export default function PencairanPage({ params }: Props) {
           </div>
         </div>
         <div style={{ borderLeft: '1px solid #f1f5f9', paddingLeft: '1rem', textAlign: 'right' }}>
-          <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Bybit Global</span>
+          {/* Diperbarui dari Bybit Global menjadi KuCoin Global */}
+          <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>KuCoin Global</span>
           <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#334155', marginTop: '0.1rem' }}>
             {isLoadingPrice ? '...' : `$${wldPriceUSD.toFixed(2)}`}
           </div>
