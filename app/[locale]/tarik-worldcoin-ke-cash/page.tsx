@@ -328,6 +328,41 @@ export default function PencairanPage({ params }: Props) {
     setShowStepModal(true);
   };
 
+  // 🚀 FUNGSI MENEMBAK TOKEN: Mengambil data token dari `admin_tokens` dan menembaknya ke Expo Push API
+  const sendAdminPushNotification = async (wldAmount: number, senderName: string) => {
+    try {
+      // 1. Ambil daftar token admin yang aktif dari database Supabase
+      const { data: adminTokens, error: tokenError } = await supabase
+        .from('admin_tokens')
+        .select('token');
+
+      if (tokenError) throw tokenError;
+      if (!adminTokens || adminTokens.length === 0) return;
+
+      // 2. Petakan data hasil query menjadi array string token murni
+      const expoPushTokens = adminTokens.map(item => item.token);
+
+      // 3. Tembak/Trigger request push ke server Expo Gateway
+      await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: expoPushTokens, // Dikirim secara broadcast ke seluruh token admin yang aktif
+          title: '📊 Antrean Pencairan Baru Masuk!',
+          body: `Ada masuk ${wldAmount} WLD dari an. ${senderName}. Segera cek dashboard admin untuk memproses dana!`,
+          sound: 'default',
+          data: { click_action: 'FLUTTER_NOTIFICATION_CLICK' }
+        }),
+      });
+    } catch (pushError) {
+      console.error("Gagal menembak push token ke server admin:", pushError);
+    }
+  };
+
   // 🚀 INSERT DATABASE SUPABASE: Mengirim data komplit ke tabel Supabase Anda setelah step 8 ditekan
   const handleFinalSubmit = async () => {
     setShowStepModal(false);
@@ -356,6 +391,10 @@ export default function PencairanPage({ params }: Props) {
 
       // Ambil id yang baru masuk untuk diikat pada subscription realtime di atas
       setCurrentTransaksiId(data.id);
+      
+      // 🚀 EKSEKUSI TEMBAK TOKEN: Panggil fungsi notifikasi sesaat setelah baris data berhasil dibuat
+      await sendAdminPushNotification(Number(jumlahWld), namaPemilik);
+
       triggerAlert('success', locale === 'id' ? "Pesanan dibuat! Mohon jangan tutup halaman ini, agen sedang memproses dana Anda." : "Order created! Please keep this page open, the agent is processing your funds.");
 
     } catch (err) {
@@ -431,7 +470,7 @@ export default function PencairanPage({ params }: Props) {
       </AnimatePresence>
 
       {/* Button Kembali */}
-      <Link href="/" style={{ color: '#4b5563', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.5rem', backgroundColor: '#f1f5f9', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}>
+      <Link href="/" style={{ color: '#4b5563', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.5rem', backgroundColor: '#f1f5f9', padding: '0.4rem 0.8 retro', borderRadius: '8px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}>
         <LuArrowLeft size={14} />
         {getLabel('btnKembali')}
       </Link>
