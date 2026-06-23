@@ -23,7 +23,9 @@ import {
   LuShieldCheck
 } from 'react-icons/lu';
 
-import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+
+// Fallback untuk berjaga-jaga jika import fi bermasalah, jika menggunakan lucide/lu silakan disesuaikan
+import { FiCheckCircle as CheckIcon, FiAlertCircle as AlertIcon } from 'react-icons/fi';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://xyz.supabase.co";
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "your-anon-key";
@@ -55,8 +57,9 @@ interface LiveNotification {
 }
 
 export default function PencairanPage({ params }: Props) {
-  const { locale: rawLocale } = use(params);
-  const locale = (rawLocale || 'en') as 'id' | 'en' | 'es' | 'tl';
+  // Unwrapping params menggunakan React.use()
+  const resolvedParams = use(params);
+  const locale = (resolvedParams?.locale || 'en') as 'id' | 'en' | 'es' | 'tl';
   
   const [wldLocalPrice, setWldLocalPrice] = useState<number>(0);
   const [wldPriceUSD, setWldPriceUSD] = useState<number>(0);
@@ -435,7 +438,6 @@ export default function PencairanPage({ params }: Props) {
   const handleFinalSubmit = async () => {
     setShowStepModal(false); setIsSubmitting(true); 
     try {
-      // 1. Simpan data transaksi pembeli ke Supabase
       const { data, error } = await supabase.from('transaksi').insert([
         { locale: locale, mata_uang: currency.code, metode_bayar: metodeBayar, nama_bank: namaBank, nama_pemilik: namaPemilik, nomor_rekening: nomorRekening, jumlah_wld: Number(jumlahWld), estimasi_lokal: totalEstimasiLokal, status: 'pending' }
       ]).select().single();
@@ -443,7 +445,6 @@ export default function PencairanPage({ params }: Props) {
       if (error) throw error;
       setCurrentTransaksiId(data.id);
 
-      // 2. 🚀 PANGGIL BACKEND API INTERNAL UNTUK PEMICU PUSH NOTIFICATION ADMIN
       await fetch('/api/notify-admin', {
         method: 'POST',
         headers: {
@@ -535,7 +536,7 @@ export default function PencairanPage({ params }: Props) {
             style={{ zIndex: 9999, width: 'calc(100% - 2rem)', maxWidth: '460px', backgroundColor: alertState.type === 'success' ? '#059669' : '#dc2626', backdropFilter: 'blur(4px)' }}
           >
             <div className="bg-white bg-opacity-20 p-2 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px' }}>
-              {alertState.type === 'success' ? <FiCheckCircle size={18} /> : <FiAlertCircle size={18} />}
+              {alertState.type === 'success' ? <CheckIcon size={18} /> : <AlertIcon size={18} />}
             </div>
             <div className="small fw-semibold">{alertState.message}</div>
           </motion.div>
@@ -666,7 +667,7 @@ export default function PencairanPage({ params }: Props) {
                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="p-3 bg-success bg-opacity-10 border border-success border-opacity-20 rounded-4 d-flex align-items-center gap-3 shadow-sm">
                     <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '36px', height: '36px' }}><LuDollarSign size={18} /></div>
                     <div>
-                      <span className="text-success fw-bold d-block" style={{ fontSize: '0.7 rents', letterSpacing: '0.03em' }}>{getLabel('estimasi')}</span>
+                      <span className="text-success fw-bold d-block" style={{ fontSize: '0.75rem', letterSpacing: '0.03em' }}>{getLabel('estimasi')}</span>
                       <div className="h3 fw-extrabold text-success m-0 mt-1" style={{ letterSpacing: '-0.03em' }}>
                         {currency.symbol}{totalEstimasiLokal.toLocaleString(currency.localeCode, { maximumFractionDigits: locale === 'id' ? 0 : 2 })}
                       </div>
@@ -749,7 +750,7 @@ export default function PencairanPage({ params }: Props) {
                   <div className="d-flex gap-1 mb-3">
                     {[...Array(item.rating)].map((_, i) => <LuStar key={i} size={13} style={{ fill: '#f59e0b', stroke: '#f59e0b' }} />)}
                   </div>
-                  <p className="small text-secondary lh-base m-0 italic text-muted">&quot;{item.comment[locale] || item.comment['en']}&quot;</p>
+                  <p className="small text-secondary lh-base m-0 text-muted"><em>&quot;{item.comment[locale] || item.comment['en']}&quot;</em></p>
                 </div>
               </div>
             </div>
@@ -783,7 +784,7 @@ export default function PencairanPage({ params }: Props) {
                     <div className="text-muted fw-bold mb-2" style={{ fontSize: '0.68rem', letterSpacing: '0.04em' }}>{getLabel('targetWalletText')}</div>
                     <div className="d-flex align-items-center justify-content-between gap-2 bg-white p-2 rounded-3 border">
                       <span className="font-monospace fw-bold text-primary-emphasis ps-1">@{myWalletAddress}</span>
-                      <button type="button" onClick={handleCopy} className={`btn btn-sm text-white fw-bold d-flex align-items-center gap-1 py-15 px-3 rounded-2 shadow-sm ${copied ? 'btn-success' : 'btn-dark'}`} style={{ fontSize: '0.75rem' }}>
+                      <button type="button" onClick={handleCopy} className={`btn btn-sm text-white fw-bold d-flex align-items-center gap-1 py-2 px-3 rounded-2 shadow-sm ${copied ? 'btn-success' : 'btn-dark'}`} style={{ fontSize: '0.75rem' }}>
                         {copied ? <LuCheck size={12} /> : <LuCopy size={12} />} {copied ? getLabel('copiedBtn') : getLabel('copyBtn')}
                       </button>
                     </div>
@@ -798,10 +799,10 @@ export default function PencairanPage({ params }: Props) {
 
               <div>
                 {currentStep < 8 ? (
-                  <button type="button" onClick={() => setCurrentStep((prev) => prev + 1)} className="btn btn-dark w-100 py-25 fw-bold small shadow-sm" style={{ borderRadius: '12px', height: '46px' }}>{getLabel('next')}</button>
+                  <button type="button" onClick={() => setCurrentStep((prev) => prev + 1)} className="btn btn-dark w-100 py-2 fw-bold small shadow-sm" style={{ borderRadius: '12px', height: '46px' }}>{getLabel('next')}</button>
                 ) : (
-                  <button type="button" onClick={handleFinalSubmit} className="btn btn-success w-100 py-25 fw-bold small d-flex align-items-center justify-content-center gap-2 shadow" style={{ borderRadius: '12px', height: '46px' }}>
-                    <FiCheckCircle size={18} /> {getLabel('doneTransfer')}
+                  <button type="button" onClick={handleFinalSubmit} className="btn btn-success w-100 py-2 fw-bold small d-flex align-items-center justify-content-center gap-2 shadow" style={{ borderRadius: '12px', height: '46px' }}>
+                    <CheckIcon size={18} /> {getLabel('doneTransfer')}
                   </button>
                 )}
               </div>
