@@ -1,14 +1,13 @@
- 
 // app/[locale]/layout.tsx
 import { ReactNode } from 'react';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { NextIntlClientProvider } from 'next-intl'; 
 import { getMessages } from 'next-intl/server';
-import { Inter } from 'next/font/google'; // 🚀 PENGOPTIMALAN FONT UNTUK SEO
+import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
-import { Link } from '@/i18n/routing'; // 🚀 IMPORT LINK INTERNASIONAL UNTUK NAVIGASI CS
+import { Link } from '@/i18n/routing';
+import Image from 'next/image'; 
+import { FiHeadphones } from 'react-icons/fi'; 
 
-// Memuat font Inter secara efisien tanpa layout shift
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 interface LayoutProps {
@@ -16,12 +15,10 @@ interface LayoutProps {
   params: Promise<{ locale: string }>; 
 }
 
-// 🌐 GENERATE METADATA DINAMIS UNTUK SEO INTERNASIONAL (UPGRADED)
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const baseUrl = 'https://world-convert.vercel.app'; // ⚠️ Sesuaikan dengan domain asli Anda
+  const baseUrl = 'https://world-convert.vercel.app';
   
-  // 1. Konfigurasi Judul Halaman (Meta Title)
   const titles: Record<string, string> = {
     id: "world-convert - Pencairan Worldcoin Instan & Aman",
     es: "world-convert - Retiro de Worldcoin Instantáneo y Seguro",
@@ -29,20 +26,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     en: "world-convert - Instant & Secure Worldcoin Withdrawal"
   };
 
-  // 2. Konfigurasi Deskripsi Halaman (Meta Description)
   const descriptions: Record<string, string> = {
-    id: "Platform agen pencairan koin WLD (Worldcoin) langsung ke rekening bank lokal dan e-wallet secara instan.",
-    es: "Plataforma de agentes para retirar monedas WLD directamente a su cuenta bancaria local o billetera digital.",
-    tl: "Ang platform para sa pag-withdraw ng WLD coins diretso sa iyong lokal na bank account o e-wallet.",
-    en: "The premier agent platform to cash out WLD coins directly to your local bank account or digital wallet instantly."
+    id: "Platform jaringan payroll global pencairan koin WLD (Worldcoin) langsung ke rekening bank lokal dan e-wallet secara instan.",
+    es: "Plataforma de red de payroll global para retirar monedas WLD directamente a su cuenta bancaria local o billetera digital.",
+    tl: "Global payroll network platform para sa pag-withdraw ng WLD coins diretso sa iyong lokal na bank account o e-wallet.",
+    en: "The premier global payroll network platform to cash out WLD coins directly to your local bank account or digital wallet instantly."
   };
 
-  // 3. Konfigurasi Kata Kunci Target (Meta Keywords Upgrade)
   const keywords: Record<string, string> = {
-    id: "pencairan worldcoin, agen wld, cara mencairkan worldcoin, jual worldcoin instan, rupiah, e-wallet, wld ke dana",
-    es: "retirar worldcoin, cambiar wld, retiro instantaneo worldcoin, agente worldcoin, cuenta bancaria, billetera digital",
-    tl: "withdraw worldcoin, paano magbenta ng wld, worldcoin philippines, cash out wld to gcash, ligtas na withdraw",
-    en: "cash out worldcoin, withdraw wld, worldcoin agent, sell worldcoin instantly, crypto to local bank, secure wld swap"
+    id: "pencairan worldcoin, agen wld, cara mencairkan worldcoin, jual worldcoin instan, rupiah, e-wallet, wld ke dana, global payroll",
+    es: "retirar worldcoin, cambiar wld, retiro instantaneo worldcoin, agente worldcoin, cuenta bancaria, billetera digital, payroll global",
+    tl: "withdraw worldcoin, paano magbenta ng wld, worldcoin philippines, cash out wld to gcash, ligtas na withdraw, global payroll",
+    en: "cash out worldcoin, withdraw wld, worldcoin agent, sell worldcoin instantly, crypto to local bank, secure wld swap, global payroll"
   };
 
   const currentTitle = titles[locale] || titles['en'];
@@ -98,76 +93,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-// ==========================================
-// 🎨 CENTRALIZED THEME STYLES (Clean UI)
-// ==========================================
-const styles = {
-  header: {
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #f1f5f9',
-    padding: '0.85rem 1.5rem',
-    position: 'sticky' as const,
-    top: 0,
-    zIndex: 50,
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px -1px rgba(0, 0, 0, 0.02)'
-  },
-  navContainer: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  logoWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.85rem',
-    cursor: 'pointer'
-  },
-  logoImageContainer: {
-    position: 'relative' as const,
-    width: '38px',
-    height: '38px',
-    borderRadius: '10px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-  },
-  logoText: {
-    fontWeight: '800',
-    fontSize: '1.25rem',
-    color: '#0f172a',
-    letterSpacing: '-0.03em'
-  },
-  rightNav: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem'
-  },
-  csButton: {
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
-    textDecoration: 'none',
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    padding: '0.5rem 0.9rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.1)',
-    transition: 'all 0.2s ease',
-    display: 'inline-flex',
-    alignItems: 'center'
-  },
-  mainContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 1rem'
-  }
-};
-
 export default async function LocaleLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
   const messages = await getMessages();
 
-  // Label multibahasa untuk tombol Customer Service
   const csLabels: Record<string, string> = {
     id: "Hubungi CS",
     en: "Contact CS",
@@ -175,36 +104,232 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
     tl: "I-contact ang CS"
   };
 
+  // List bahasa internasional dengan kode benderanya masing-masing
+  const languages = [
+    { code: 'id', label: 'ID', flag: 'id' }, // Indonesia (Merah Putih)
+    { code: 'en', label: 'EN', flag: 'us' }, // Global / US
+    { code: 'es', label: 'ES', flag: 'es' }, // Spanyol
+    { code: 'tl', label: 'PH', flag: 'ph' }, // Filipina
+  ];
+
+  const getLogoFlagCode = (currentLocale: string): string => {
+    switch (currentLocale) {
+      case 'id': return 'id'; 
+      case 'es': return 'es'; 
+      case 'tl': return 'ph'; 
+      default: return 'us';   
+    }
+  };
+
   return (
     <html lang={locale} className={inter.className}>
-      <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc', minHeight: '100vh', color: '#0f172a' }}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#FAFAFA', minHeight: '100vh', color: '#09090B' }}>
+        
+        {/* ARSITEKTUR GAYA MINIMALIS ENTERPRISE GRADE */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .layout-header {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E4E4E7;
+            padding: 0.75rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+          }
+          .layout-nav {
+            max-width: 1080px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .layout-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: #09090B;
+          }
+          .layout-flag-badge {
+            position: relative;
+            width: 18px;
+            height: 12px;
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+          }
+          .layout-logo-text {
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: -0.03em;
+          }
+          .layout-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+          .layout-cs-btn {
+            background-color: #09090B;
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: background-color 0.15s ease;
+          }
+          .layout-cs-btn:hover {
+            background-color: #27272A;
+          }
+          .layout-cs-text {
+            display: none;
+          }
+          
+          /* KONTANER SEGMENTED CONTROL BAR */
+          .layout-lang-container {
+            display: inline-flex;
+            align-items: center;
+            background: #F4F4F5;
+            border: 1px solid #E4E4E7;
+            padding: 2px;
+            border-radius: 8px;
+            gap: 2px;
+          }
+
+          /* STYLING UNTUK TIAP TOMBOL NEGARA */
+          .switcher-btn {
+            background: transparent;
+            border: none;
+            color: #71717A;
+            font-size: 0.725rem;
+            font-weight: 600;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+          }
+          .switcher-btn:hover {
+            color: #09090B;
+          }
+          .switcher-btn.active {
+            background-color: #FFFFFF;
+            color: #09090B;
+            box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05), 0px 1px 1px rgba(0, 0, 0, 0.03);
+          }
+          .btn-flag-wrapper {
+            position: relative;
+            width: 14px;
+            height: 10px;
+            border-radius: 1px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+          }
+
+          .layout-main {
+            max-width: 1080px;
+            margin: 0 auto;
+            box-sizing: border-box;
+          }
+
+          @media (min-width: 640px) {
+            .layout-header {
+              padding: 0.85rem 1.5rem;
+            }
+            .layout-logo-text {
+              font-size: 1.2rem;
+            }
+            .layout-right {
+              gap: 0.75rem;
+            }
+            .layout-cs-btn {
+              padding: 0.5rem 1rem;
+              font-size: 0.85rem;
+            }
+            .layout-cs-text {
+              display: inline;
+            }
+            .switcher-btn {
+              font-size: 0.775rem;
+              padding: 0.4rem 0.7rem;
+              gap: 0.4rem;
+            }
+            .btn-flag-wrapper {
+              width: 15px;
+              height: 11px;
+            }
+          }
+        `}} />
+
         <NextIntlClientProvider messages={messages}>
           
-          {/* Header Komponen Semantik */}
-          <header style={styles.header}>
-            <div style={styles.navContainer}>
+          <header className="layout-header">
+            <div className="layout-nav">
               
-              {/* Logo & Brand Identity */}
-              <div style={styles.logoWrapper}>
-                <div style={styles.logoImageContainer}>
-                  
+              {/* Identitas Logo Utama di Kiri (Bendera Berubah Otomatis) */}
+              <Link href="/" className="layout-logo">
+                <div className="layout-flag-badge">
+                  <Image
+                    src={`https://flagcdn.com/w40/${getLogoFlagCode(locale)}.png`}
+                    alt={`${locale.toUpperCase()} Hub`}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="20px"
+                    priority
+                  />
                 </div>
-                <span style={styles.logoText}>
-                  World-convert
-                </span>
-              </div>
+                <span className="layout-logo-text">world-convert</span>
+              </Link>
               
-              {/* Kontainer Navigasi Kanan (CS + Language Selector) */}
-              <div style={styles.rightNav}>
+              {/* Kontrol Navigasi Kanan */}
+              <div className="layout-right">
                 
-                {/* 🚀 TOMBOL CUSTOMER SERVICE MENYESUAIKAN BAHASA */}
-                <Link href="/cs" style={styles.csButton}>
-                  {csLabels[locale] || csLabels['en']}
+                {/* Tombol Hubungi Customer Support */}
+                <Link href="/cs" className="layout-cs-btn" aria-label={csLabels[locale] || csLabels['en']}>
+                  <FiHeadphones style={{ fontSize: '1rem', flexShrink: 0 }} />
+                  <span className="layout-cs-text">
+                    {csLabels[locale] || csLabels['en']}
+                  </span>
                 </Link>
 
-                {/* Menu Navigasi Bahasa */}
-                <nav aria-label="Language Selector">
-                  <LanguageSwitcher />
+                {/* 🚀 BUTTON LIST SWITCHER NEGARA BERBENDERA (ID, EN, ES, PH) */}
+                <nav aria-label="Language Selector" className="layout-lang-container">
+                  {languages.map((lang) => (
+                    <Link
+                      key={lang.code}
+                      href="/"
+                      locale={lang.code}
+                      className={`switcher-btn ${locale === lang.code ? 'active' : ''}`}
+                    >
+                      {/* Bendera Negara Mikro */}
+                      <div className="btn-flag-wrapper">
+                        <Image
+                          src={`https://flagcdn.com/w20/${lang.flag}.png`}
+                          alt={`${lang.label} node`}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          sizes="16px"
+                          priority
+                        />
+                      </div>
+                      
+                      {/* Label Teks Singkatan Negara */}
+                      <span>{lang.label}</span>
+                    </Link>
+                  ))}
                 </nav>
 
               </div>
@@ -212,8 +337,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
             </div>
           </header>
 
-          {/* Area Konten Utama Halaman */}
-          <main style={styles.mainContent}>
+          <main className="layout-main">
             {children}
           </main>
 
