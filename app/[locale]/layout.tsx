@@ -8,6 +8,10 @@ import { Link } from '@/i18n/routing';
 import Image from 'next/image'; 
 import { FiHeadphones } from 'react-icons/fi'; 
 
+// 1. Integrasi Bootstrap & Bootstrap Icons Global
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 interface LayoutProps {
@@ -36,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const keywords: Record<string, string> = {
     id: "pencairan worldcoin, agen wld, cara mencairkan worldcoin, jual worldcoin instan, rupiah, e-wallet, wld ke dana, global payroll",
     es: "retirar worldcoin, cambiar wld, retiro instantaneo worldcoin, agente worldcoin, cuenta bancaria, billetera digital, payroll global",
-    tl: "withdraw worldcoin, paano magbenta ng wld, worldcoin philippines, cash out wld to gcash, ligtas na withdraw, global payroll",
+    tl: "withdraw worldcoin, paano magbenta ng wld, worldcoin philippines, cash out wld to gcash, lunas na withdraw, global payroll",
     en: "cash out worldcoin, withdraw wld, worldcoin agent, sell worldcoin instantly, crypto to local bank, secure wld swap, global payroll"
   };
 
@@ -94,6 +98,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 export default async function LocaleLayout({ children, params }: LayoutProps) {
+  // Menggunakan unwrapping Promise params yang benar untuk Next.js terbaru
   const { locale } = await params;
   const messages = await getMessages();
 
@@ -104,12 +109,11 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
     tl: "I-contact ang CS"
   };
 
-  // List bahasa internasional dengan kode benderanya masing-masing
   const languages = [
-    { code: 'id', label: 'ID', flag: 'id' }, // Indonesia (Merah Putih)
-    { code: 'en', label: 'EN', flag: 'us' }, // Global / US
-    { code: 'es', label: 'ES', flag: 'es' }, // Spanyol
-    { code: 'tl', label: 'PH', flag: 'ph' }, // Filipina
+    { code: 'id', label: 'ID', flag: 'id' }, 
+    { code: 'en', label: 'EN', flag: 'us' }, 
+    { code: 'es', label: 'ES', flag: 'es' }, 
+    { code: 'tl', label: 'PH', flag: 'ph' }, 
   ];
 
   const getLogoFlagCode = (currentLocale: string): string => {
@@ -128,7 +132,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
       </head>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#FAFAFA', minHeight: '100vh', color: '#09090B' }}>
         
-        {/* ARSITEKTUR GAYA MINIMALIS ENTERPRISE GRADE */}
         <style dangerouslySetInnerHTML={{ __html: `
           .layout-header {
             background-color: #FFFFFF;
@@ -192,7 +195,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
             display: none;
           }
           
-          /* KONTANER SEGMENTED CONTROL BAR */
           .layout-lang-container {
             display: inline-flex;
             align-items: center;
@@ -203,7 +205,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
             gap: 2px;
           }
 
-          /* STYLING UNTUK TIAP TOMBOL NEGARA */
           .switcher-btn {
             background: transparent;
             border: none;
@@ -275,11 +276,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
         `}} />
 
         <NextIntlClientProvider messages={messages}>
-          
           <header className="layout-header">
             <div className="layout-nav">
               
-              {/* Identitas Logo Utama di Kiri (Bendera Berubah Otomatis) */}
               <Link href="/" className="layout-logo">
                 <div className="layout-flag-badge">
                   <Image
@@ -294,10 +293,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                 <span className="layout-logo-text">world-convert</span>
               </Link>
               
-              {/* Kontrol Navigasi Kanan */}
               <div className="layout-right">
                 
-                {/* Tombol Hubungi Customer Support */}
                 <Link href="/cs" className="layout-cs-btn" aria-label={csLabels[locale] || csLabels['en']}>
                   <FiHeadphones style={{ fontSize: '1rem', flexShrink: 0 }} />
                   <span className="layout-cs-text">
@@ -305,7 +302,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                   </span>
                 </Link>
 
-                {/* 🚀 BUTTON LIST SWITCHER NEGARA BERBENDERA (ID, EN, ES, PH) */}
                 <nav aria-label="Language Selector" className="layout-lang-container">
                   {languages.map((lang) => (
                     <Link
@@ -314,7 +310,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                       locale={lang.code}
                       className={`switcher-btn ${locale === lang.code ? 'active' : ''}`}
                     >
-                      {/* Bendera Negara Mikro */}
                       <div className="btn-flag-wrapper">
                         <Image
                           src={`https://flagcdn.com/w20/${lang.flag}.png`}
@@ -325,8 +320,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
                           priority
                         />
                       </div>
-                      
-                      {/* Label Teks Singkatan Negara */}
                       <span>{lang.label}</span>
                     </Link>
                   ))}
@@ -340,7 +333,6 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
           <main className="layout-main">
             {children}
           </main>
-
         </NextIntlClientProvider>
       </body>
     </html>

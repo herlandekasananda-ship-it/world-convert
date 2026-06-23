@@ -12,16 +12,19 @@ export default function InteractiveCoin() {
     let isMoving = false;
 
     const handleMove = (clientX: number, clientY: number) => {
+      // MATIKAN animasi otomatis saat ada interaksi jari/mouse agar tidak bentrok
+      coin.style.animation = 'none';
+
       const rect = coin.getBoundingClientRect();
       const coinCenterX = rect.left + rect.width / 2;
       const coinCenterY = rect.top + rect.height / 2;
 
-      const maxDelta = 140;
+      const maxDelta = 160;
       const deltaX = Math.min(Math.max((clientX - coinCenterX) / maxDelta, -1), 1);
       const deltaY = Math.min(Math.max((clientY - coinCenterY) / maxDelta, -1), 1);
 
-      const rotateY = deltaX * 45;
-      const rotateX = -deltaY * 45; 
+      const rotateY = deltaX * 40;
+      const rotateX = -deltaY * 40; 
 
       coin.style.setProperty('--coin-rx', `${rotateX}deg`);
       coin.style.setProperty('--coin-ry', `${rotateY}deg`);
@@ -32,7 +35,10 @@ export default function InteractiveCoin() {
       coin.style.setProperty('--shine-y', `${shineY}%`);
     };
 
-    const onTouchStart = () => { isMoving = true; };
+    // AKTIF: Event Listener untuk Layar Sentuh HP (Touchscreen)
+    const onTouchStart = () => { 
+      isMoving = true; 
+    };
     const onTouchMove = (e: TouchEvent) => {
       if (!isMoving) return;
       const touch = e.touches[0];
@@ -40,20 +46,24 @@ export default function InteractiveCoin() {
     };
     const onTouchEnd = () => {
       isMoving = false;
-      coin.style.setProperty('--coin-rx', '0deg');
-      coin.style.setProperty('--coin-ry', '0deg');
-      coin.style.setProperty('--shine-x', '30%');
-      coin.style.setProperty('--shine-y', '30%');
+      resetCoin();
     };
 
+    // AKTIF: Event Listener untuk Mouse desktop
     const onMouseMove = (e: MouseEvent) => {
       handleMove(e.clientX, e.clientY);
     };
     const onMouseLeave = () => {
+      resetCoin();
+    };
+
+    const resetCoin = () => {
       coin.style.setProperty('--coin-rx', '0deg');
       coin.style.setProperty('--coin-ry', '0deg');
       coin.style.setProperty('--shine-x', '30%');
       coin.style.setProperty('--shine-y', '30%');
+      // HIDUPKAN KEMBALI animasi putar pelan saat jari/mouse sudah lepas
+      coin.style.animation = 'slowSwing 6s ease-in-out infinite alternate';
     };
 
     coin.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -75,24 +85,46 @@ export default function InteractiveCoin() {
     <>
       <style dangerouslySetInnerHTML={{ __html: `
         .hp-coin-container {
-          perspective: 1200px;
+          perspective: 1500px;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 250px;
-          height: 250px;
+          width: 280px;
+          height: 280px;
         }
 
         .hp-coin {
           position: relative;
-          width: 160px;
-          height: 160px;
+          width: 180px;
+          height: 180px;
           transform-style: preserve-3d;
           transform: rotateX(var(--coin-rx, 0deg)) rotateY(var(--coin-ry, 0deg));
-          transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+          transition: transform 0.2s cubic-bezier(0.215, 0.610, 0.355, 1);
+          will-change: transform;
+          cursor: grab;
+          
+          /* Animasi default saat diam: Ayun menoleh kiri-kanan pelan */
+          animation: slowSwing 6s ease-in-out infinite alternate;
+        }
+
+        .hp-coin:active {
+          cursor: grabbing;
+        }
+
+        /* KEYFRAMES: Berputar sebagian saja (tidak full 360) agar efek 3D timbul */
+        @keyframes slowSwing {
+          0% {
+            transform: rotateX(-5deg) rotateY(-25deg);
+            --shine-x: 15%;
+            --shine-y: 20%;
+          }
+          100% {
+            transform: rotateX(5deg) rotateY(25deg);
+            --shine-x: 75%;
+            --shine-y: 50%;
+          }
         }
         
-        /* Lapisan wajah koin */
         .hp-coin-face {
           position: absolute;
           inset: 0;
@@ -100,89 +132,60 @@ export default function InteractiveCoin() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 45%, #94a3b8 70%, #475569 100%);
-          border: 4px solid #f8fafc;
+          background: radial-gradient(circle at 35% 35%, #1e1e1e 0%, #121212 50%, #050505 100%);
+          border: 4px solid #262626;
           overflow: hidden;
+          backface-visibility: hidden;
         }
 
-        /* Kilauan specular reflektif */
         .hp-coin-face::after {
           content: '';
           position: absolute;
-          inset: -50%;
+          inset: -60%;
           background: linear-gradient(
-            to bottom right,
-            rgba(255,255,255,0) 30%,
-            rgba(255,255,255,0.7) 45%,
-            rgba(255,255,255,0) 55%
+            135deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0) 35%,
+            rgba(255,255,255,0.15) 47%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.15) 53%,
+            rgba(255,255,255,0) 65%,
+            rgba(255,255,255,0) 100%
           );
           transform: translate(calc(var(--shine-x, 30%) - 50%), calc(var(--shine-y, 30%) - 50%));
-          mix-blend-mode: overlay;
+          mix-blend-mode: screen;
           pointer-events: none;
         }
 
-        /* 1. MUKA DEPAN: Berada di paling depan ruang 3D */
         .hp-coin-front {
-          transform: translateZ(14px);
-          box-shadow: inset 0 8px 15px rgba(0,0,0,0.25), inset 0 -8px 15px rgba(255,255,255,0.7);
+          transform: translateZ(10px);
+          box-shadow: inset 0 4px 10px rgba(255,255,255,0.05), inset 0 -4px 10px rgba(0,0,0,0.8);
           z-index: 3;
         }
 
-        /* 2. MUKA BELAKANG: Berada di paling belakang ruang 3D */
         .hp-coin-back {
-          transform: translateZ(-14px) rotateY(180deg);
-          box-shadow: inset 0 8px 15px rgba(0,0,0,0.25), inset 0 -8px 15px rgba(255,255,255,0.7);
+          transform: translateZ(-10px) rotateY(180deg);
+          box-shadow: inset 0 4px 10px rgba(255,255,255,0.05), inset 0 -4px 10px rgba(0,0,0,0.8);
           z-index: 1;
         }
 
-        /* 3. SOLUSI TANPA CELAH: Silinder Tengah yang dibuat menggunakan tumpukan 3D Shadow Padat */
         .hp-coin-thickness-core {
           position: absolute;
-          inset: 0;
+          inset: 1px;
           border-radius: 50%;
-          background: #cbd5e1;
-          /* Dorong ke tengah-tengah antara plat depan dan belakang */
-          transform: translateZ(0px); 
+          background: #171717;
+          transform: translateZ(0px);
           z-index: 2;
-          
-          /* Layering shadow presisi yang menciptakan efek silinder chrome padat 28px tanpa sambungan garis */
           box-shadow: 
-            0 0 0 0.5px #94a3b8,
-            /* Blok Ekstrusi Sisi Depan */
-            0 0 2px #cbd5e1,
-            translateZ(1px) 0 0 #cbd5e1,
-            translateZ(2px) 0 0 #cbd5e1,
-            translateZ(3px) 0 0 #cbd5e1,
-            translateZ(4px) 0 0 #94a3b8,
-            translateZ(5px) 0 0 #94a3b8,
-            translateZ(6px) 0 0 #64748b,
-            translateZ(7px) 0 0 #64748b,
-            translateZ(8px) 0 0 #cbd5e1,
-            translateZ(9px) 0 0 #f1f5f9,
-            translateZ(10px) 0 0 #ffffff,
-            translateZ(11px) 0 0 #ffffff,
-            translateZ(12px) 0 0 #cbd5e1,
-            translateZ(13px) 0 0 #94a3b8,
-            /* Blok Ekstrusi Sisi Belakang */
-            translateZ(-1px) 0 0 #cbd5e1,
-            translateZ(-2px) 0 0 #cbd5e1,
-            translateZ(-3px) 0 0 #cbd5e1,
-            translateZ(-4px) 0 0 #94a3b8,
-            translateZ(-5px) 0 0 #94a3b8,
-            translateZ(-6px) 0 0 #475569,
-            translateZ(-7px) 0 0 #334155,
-            translateZ(-8px) 0 0 #475569,
-            translateZ(-9px) 0 0 #64748b,
-            translateZ(-10px) 0 0 #94a3b8,
-            translateZ(-11px) 0 0 #cbd5e1,
-            translateZ(-12px) 0 0 #f1f5f9,
-            translateZ(-13px) 0 0 #94a3b8,
-            /* Bayangan Luar Utama Objek ke Background */
-            0 20px 40px rgba(0,0,0,0.4);
+            0 1px 0 #262626, 0 -1px 0 #262626, 1px 0 0 #0a0a0a, -1px 0 0 #0a0a0a,
+            0 0 0 1px #1f1f1f,
+            0 20px 40px rgba(0, 0, 0, 0.65),
+            0 10px 15px rgba(0, 0, 0, 0.45);
         }
 
         .hp-coin-face svg {
-          filter: drop-shadow(0px -1px 1px rgba(255, 255, 255, 0.7)) drop-shadow(0px 2.5px 2.5px rgba(0, 0, 0, 0.35));
+          filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.8));
+          transition: transform 0.2s ease;
         }
       `}} />
 
@@ -192,34 +195,34 @@ export default function InteractiveCoin() {
           left: '50%',
           top: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%)',
+          width: '320px',
+          height: '320px',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%)',
           pointerEvents: 'none',
           zIndex: 0
         }} aria-hidden="true" />
 
-        <div className="hp-coin-container" aria-label="Worldcoin Seamless 3D Coin">
+        <div className="hp-coin-container" aria-label="World App Minimalist 3D Coin">
           <div ref={coinRef} className="hp-coin">
             
-            {/* SISI DEPAN (Z-Index Atas) */}
+            {/* SISI DEPAN */}
             <div className="hp-coin-face hp-coin-front">
-              <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="38" stroke="#334155" strokeWidth="7.5" fill="none"/>
-                <line x1="12" y1="50" x2="88" y2="50" stroke="#334155" strokeWidth="7.5" strokeLinecap="square"/>
-                <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#334155" strokeWidth="7.5" fill="none" strokeLinecap="square"/>
+              <svg width="105" height="105" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="38" stroke="#FFFFFF" strokeWidth="7" fill="none"/>
+                <line x1="12" y1="50" x2="88" y2="50" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round"/>
+                <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#FFFFFF" strokeWidth="7" fill="none" strokeLinecap="round"/>
               </svg>
             </div>
 
-            {/* SISI TENGAH LOGAM PADAT (Menggantikan loop segmen tipis) */}
+            {/* SISI TENGAH */}
             <div className="hp-coin-thickness-core" />
 
             {/* SISI BELAKANG */}
             <div className="hp-coin-face hp-coin-back">
-              <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="38" stroke="#334155" strokeWidth="7.5" fill="none"/>
-                <line x1="12" y1="50" x2="88" y2="50" stroke="#334155" strokeWidth="7.5" strokeLinecap="square"/>
-                <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#334155" strokeWidth="7.5" fill="none" strokeLinecap="square"/>
+              <svg width="105" height="105" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="38" stroke="#FFFFFF" strokeWidth="7" fill="none"/>
+                <line x1="12" y1="50" x2="88" y2="50" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round"/>
+                <path d="M 68,29 A 21,21 0 0,0 33,50 A 21,21 0 0,0 68,71" stroke="#FFFFFF" strokeWidth="7" fill="none" strokeLinecap="round"/>
               </svg>
             </div>
 
