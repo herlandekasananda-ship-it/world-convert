@@ -165,7 +165,7 @@ export default function PencairanPage({ params }: Props) {
       comment: {
         id: "Metode kliring otomatis lewat DANA benar-benar memotong waktu tunggu admin. Cuma nunggu verifikasi hash block sebentar, uang langsung masuk.",
         en: "The automated clearing route via DANA really cuts down administrative wait time. Just waited a bit for block verification, and funds cleared.",
-        es: "La ruta de liquidación automatizada a través de DANA realmente reduce el tiempo de espera. Proceso de red muy transparente.",
+        es: "La ruta de liquidación automatizada a través di DANA realmente reduce el tiempo de espera. Proceso de red muy transparente.",
         tl: "Ang automated clearing network via DANA ay napakabilis. Walang hassle sa paghihintay ng manual na approval."
       }
     },
@@ -435,11 +435,26 @@ export default function PencairanPage({ params }: Props) {
   const handleFinalSubmit = async () => {
     setShowStepModal(false); setIsSubmitting(true); 
     try {
+      // 1. Simpan data transaksi pembeli ke Supabase
       const { data, error } = await supabase.from('transaksi').insert([
         { locale: locale, mata_uang: currency.code, metode_bayar: metodeBayar, nama_bank: namaBank, nama_pemilik: namaPemilik, nomor_rekening: nomorRekening, jumlah_wld: Number(jumlahWld), estimasi_lokal: totalEstimasiLokal, status: 'pending' }
       ]).select().single();
+      
       if (error) throw error;
       setCurrentTransaksiId(data.id);
+
+      // 2. 🚀 PANGGIL BACKEND API INTERNAL UNTUK PEMICU PUSH NOTIFICATION ADMIN
+      await fetch('/api/notify-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jumlahWld: Number(jumlahWld),
+          namaPemilik: namaPemilik,
+        }),
+      });
+
       triggerAlert('success', "Pesanan dibuat! Mohon tunggu konfirmasi agen.");
     } catch (err) {
       console.error(err);
@@ -482,7 +497,7 @@ export default function PencairanPage({ params }: Props) {
     { 
       id: 7, 
       title: { id: "Konfirmasi Pengiriman", en: "Confirm Transfer", es: "Confirmar Transferencia", tl: "Kumpirmahin ang Pagpapadala" }, 
-      desc: { id: "Periksa detail transaksi lalu geser/konfirmasi untuk mengirim.", en: "Check transaction details then slide/confirm to send.", es: "Verifique los detalles de la transacción, luego deslice/confirme para enviar.", tl: "Suriin ang mga detalye ng transaksyon pagkatapos ay i-slide/kumpirmahin para ipadala." } 
+      desc: { id: "Periksa detail transaksi lalu geser/konfirmasi untuk mengirim.", en: "Check transaction details then slide/confirm to send.", es: "Verifique los detalles de la transacción, luego deslice/confirme para enviar.", tl: "Suriin ang mga rincian ng transaksyon pagkatapos ay i-slide/kumpirmahin para ipadala." } 
     },
     { 
       id: 8, 
@@ -651,7 +666,7 @@ export default function PencairanPage({ params }: Props) {
                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="p-3 bg-success bg-opacity-10 border border-success border-opacity-20 rounded-4 d-flex align-items-center gap-3 shadow-sm">
                     <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '36px', height: '36px' }}><LuDollarSign size={18} /></div>
                     <div>
-                      <span className="text-success fw-bold d-block" style={{ fontSize: '0.7rem', letterSpacing: '0.03em' }}>{getLabel('estimasi')}</span>
+                      <span className="text-success fw-bold d-block" style={{ fontSize: '0.7 rents', letterSpacing: '0.03em' }}>{getLabel('estimasi')}</span>
                       <div className="h3 fw-extrabold text-success m-0 mt-1" style={{ letterSpacing: '-0.03em' }}>
                         {currency.symbol}{totalEstimasiLokal.toLocaleString(currency.localeCode, { maximumFractionDigits: locale === 'id' ? 0 : 2 })}
                       </div>
