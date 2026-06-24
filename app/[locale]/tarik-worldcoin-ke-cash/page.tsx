@@ -23,7 +23,6 @@ import {
   LuShieldCheck
 } from 'react-icons/lu';
 
-
 // Fallback untuk berjaga-jaga jika import fi bermasalah, jika menggunakan lucide/lu silakan disesuaikan
 import { FiCheckCircle as CheckIcon, FiAlertCircle as AlertIcon } from 'react-icons/fi';
 
@@ -435,26 +434,53 @@ export default function PencairanPage({ params }: Props) {
     setCurrentStep(1); setShowStepModal(true);
   };
 
+  // 🚀 UPGRADE FUNCTION: Menghapus tembakan CORS client-side & menyatukan pengiriman ke API Route internal
   const handleFinalSubmit = async () => {
-    setShowStepModal(false); setIsSubmitting(true); 
+    setShowStepModal(false); 
+    setIsSubmitting(true); 
+    
     try {
+      // 1. Masukkan data ke dalam tabel 'transaksi' Supabase
       const { data, error } = await supabase.from('transaksi').insert([
-        { locale: locale, mata_uang: currency.code, metode_bayar: metodeBayar, nama_bank: namaBank, nama_pemilik: namaPemilik, nomor_rekening: nomorRekening, jumlah_wld: Number(jumlahWld), estimasi_lokal: totalEstimasiLokal, status: 'pending' }
+        { 
+          locale: locale, 
+          mata_uang: currency.code, 
+          metode_bayar: metodeBayar, 
+          nama_bank: namaBank, 
+          nama_pemilik: namaPemilik, 
+          nomor_rekening: nomorRekening, 
+          jumlah_wld: Number(jumlahWld), 
+          estimasi_lokal: totalEstimasiLokal, 
+          status: 'pending' 
+        }
       ]).select().single();
       
       if (error) throw error;
       setCurrentTransaksiId(data.id);
 
-      await fetch('/api/notify-admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jumlahWld: Number(jumlahWld),
-          namaPemilik: namaPemilik,
-        }),
-      });
+      // 2. ⚡ KIRIM KE API ROUTE INTERNAL (Aman dari CORS & Bebas Error 'Failed to Fetch')
+      try {
+        const response = await fetch('/api/notify-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jumlahWld: Number(jumlahWld),
+            namaPemilik: namaPemilik,
+            metodeBayar: metodeBayar,
+            namaBank: namaBank
+          }),
+        });
+
+        if (!response.ok) {
+          console.error("Gagal mengirim notifikasi via backend route.");
+        } else {
+          console.log("✅ Push Notification sukses diproses oleh Server Backend Next.js!");
+        }
+      } catch (apiErr) {
+        console.error("Gagal menjangkau backend notifier route:", apiErr);
+      }
 
       triggerAlert('success', "Pesanan dibuat! Mohon tunggu konfirmasi agen.");
     } catch (err) {
@@ -468,7 +494,7 @@ export default function PencairanPage({ params }: Props) {
     { 
       id: 1, 
       title: { id: "Salin Username Agen", en: "Copy Agent Username", es: "Copiar usuario del agente", tl: "Kopyahin ang Username ng Ahente" }, 
-      desc: { id: "Salin nama username World App tujuan transfer agen kami di bawah ini.", en: "Copy our agent's World App destination username shown below.", es: "Copie el nombre de usuario de World App de destino de nuestro agente a continuación.", tl: "Kopyahin ang patutunguhang username sa World App ng aming ahente sa ibaba." } 
+      desc: { id: "Salin nama username World App tujuan transfer agen kami di bawah ini.", en: "Copy our agent's World App destination username shown below.", es: "Copie el nombre de usuario de World App de destino di nuestro agente a continuación.", tl: "Kopyahin ang patutunguhang username sa World App ng aming ahente sa ibaba." } 
     },
     { 
       id: 2, 
