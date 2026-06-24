@@ -97,7 +97,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     },
   };
 }
-<meta name="google-site-verification" content="MzSSouskTNiBOMiqC9cX5djg_WOUbH_V7LaS-YYPVvo" />
+
 export default async function LocaleLayout({ children, params }: LayoutProps) {
   // Menggunakan unwrapping Promise params yang benar untuk Next.js terbaru
   const { locale } = await params;
